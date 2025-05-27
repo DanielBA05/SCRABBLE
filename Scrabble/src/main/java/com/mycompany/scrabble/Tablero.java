@@ -42,14 +42,14 @@ public class Tablero {
         return Casilla.DOUP;
     }
 
-    // Triple Letra (TRIPL) - Casillas rojas
+    // Triple Letra (TRIPL) 
     if ((x == 5 && (y == 1 || y == 5 || y == 9 || y == 13)) ||
         (x == 9 && (y == 1 || y == 5 || y == 9 || y == 13)) ||
         ((y == 5 || y == 9) && (x == 1 || x == 5 || x == 9 || x == 13))) {
         return Casilla.TRIPL;
     }
 
-    // Doble Letra (DOUL) - Casillas rosadas
+    // Doble Letra (DOUL) 
     if ((x == 3 || x == 11) && (y == 0 || y == 7 || y == 14)) {
         return Casilla.DOUL;
     }
@@ -63,7 +63,7 @@ public class Tablero {
         return Casilla.DOUL;
     }
 
-    // Resto: Sin bonificación
+    // Resto: casillas normales
     return Casilla.NONE;
 }
 
@@ -80,7 +80,7 @@ public class Tablero {
     public Casilla obtenerCasilla(int fila, int columna) {
         return matriz[fila][columna];
     }
-
+    //es un prototipo, de ser necesario lo pueden mover a otra clase
     public void aplicarBonificadores(Casilla casilla, int[] valorLetra, int[] multiplicadorPalabra) {
         if (!casilla.isBonificadorUsado()) {
             switch (casilla.getMultiplier()) {
