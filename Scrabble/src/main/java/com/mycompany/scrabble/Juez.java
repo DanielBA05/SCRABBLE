@@ -2,7 +2,7 @@ import java.nio.file.*;
 import java.util.*;
 import java.io.IOException;
 
-
+package com.mycompany.scrabble;
 //uso hash pq has es lo mejor O(1) y god
 public class Juez {
     private Set<String> diccionario; // para setear usando hash
