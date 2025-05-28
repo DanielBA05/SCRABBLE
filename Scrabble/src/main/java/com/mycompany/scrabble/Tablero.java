@@ -1,7 +1,3 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
 package com.mycompany.scrabble;
 
 /**
@@ -38,7 +34,7 @@ public class Tablero {
     }
 
     // Diagonales (excepto esquinas y centro): Doble Palabra (DOUP)
-    if ((x == y || x + y == 14) && x != 0 && x != 7 && x != 14 && y != 0 && y != 7 && y != 14) {
+    if ((x == y || x + y == 14) && x != 0 && x != 7 && x != 14 && x!=6 && x!=8 && y!=6 && y!=8 && y != 0 && y != 7 && y != 14 ) {
         return Casilla.DOUP;
     }
 
