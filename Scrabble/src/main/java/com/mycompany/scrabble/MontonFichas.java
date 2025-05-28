@@ -64,7 +64,9 @@ public class MontonFichas {
         System.out.println("Ficha robada: " + robada.getLetra()); //por si quisieramos ver en terminal
         return robada; //retornamos la ficha
     }
-    
+    public int getCantidadFichas() {
+    return fichas.size();
+}
     public void devolverFichas(List<Ficha> fichasDevueltas){
         for (Ficha devuelta : fichasDevueltas){ //para cada ficha devuelta 
             fichas.add(devuelta); //se vuelve a agregar al montón

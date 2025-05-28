@@ -30,20 +30,28 @@ public class Casilla {
         this.ficha = null;
         this.bonificadorUsado = false;
     }
-
-    // Getters y setters
+    public void quitarFicha() {
+    this.ficha = null;
+}
     public int getX() {
-        return x; }
+        return x; 
+    }
     public int getY() {
-        return y; }
+        return y;
+    }
     public Ficha getFicha() {
-        return ficha; }
+        return ficha; 
+    }
     public void setFicha(Ficha ficha) {
-        this.ficha = ficha; }
+        this.ficha = ficha;
+    }
     public int getMultiplier() {
-        return multiplier; }
+        return multiplier;
+    }
     public boolean isBonificadorUsado() {
-        return bonificadorUsado; }
+        return bonificadorUsado;
+    }
     public void setBonificadorUsado(boolean usado) { 
-        this.bonificadorUsado = usado; }
+        this.bonificadorUsado = usado;
+    }
 }

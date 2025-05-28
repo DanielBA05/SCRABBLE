@@ -18,6 +18,9 @@ public class Tablero {
             }
         }
     }
+    
+
+
 
     private int obtenerBonificador(int x, int y) {
         // Triple Palabra (TRIPP)
@@ -83,6 +86,11 @@ public class Tablero {
     public Casilla obtenerCasilla(int fila, int columna) {
         return matriz[fila][columna];
     }
+    public void quitarFichaDeTablero(int fila, int columna) {
+    Casilla casilla = obtenerCasilla(fila, columna);
+    casilla.quitarFicha();
+}
+    
     //es un prototipo, de ser necesario lo pueden mover a otra clase
     public void aplicarBonificadores(Casilla casilla, int[] valorLetra, int[] multiplicadorPalabra) {
         if (!casilla.isBonificadorUsado()) {
