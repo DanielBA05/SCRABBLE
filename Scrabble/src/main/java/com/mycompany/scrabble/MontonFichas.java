@@ -55,4 +55,20 @@ public class MontonFichas {
     
     Collections.shuffle(fichas); //y revolvemos la lista
     }
+
+        public Ficha robarFicha(){
+        if (fichas.isEmpty()){ 
+            return null; //si no existen más fichas, no hay nada que pueda robar
+        }
+        Ficha robada = fichas.remove(0); //como ya está barajado, no importa cuál tomemos
+        System.out.println("Ficha robada: " + robada.getLetra()); //por si quisieramos ver en terminal
+        return robada; //retornamos la ficha
+    }
+    
+    public void devolverFichas(List<Ficha> fichasDevueltas){
+        for (Ficha devuelta : fichasDevueltas){ //para cada ficha devuelta 
+            fichas.add(devuelta); //se vuelve a agregar al montón
+        }
+        Collections.shuffle(fichas); //y se vuelve a barajar 
+    }
 }
