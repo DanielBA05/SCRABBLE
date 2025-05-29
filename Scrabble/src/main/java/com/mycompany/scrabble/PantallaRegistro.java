@@ -5,6 +5,8 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.util.*;
 import java.util.List;
+import java.util.stream.Collectors;
+import java.io.IOException;
 
 public class PantallaRegistro extends JFrame {
     private JComboBox<Integer> selectorJugadores;
@@ -16,7 +18,7 @@ public class PantallaRegistro extends JFrame {
     private JButton botonIniciar;
     private MontonFichas monton;
     private List<Jugador> ordenJugadores;
-
+    private Juego juego;
 
     public PantallaRegistro() {
         setTitle("Registro de Jugadores - SCRABBLE");
@@ -132,7 +134,6 @@ public class PantallaRegistro extends JFrame {
     private void iniciarJuego(ActionEvent e) {
         int cantidad = (Integer) selectorJugadores.getSelectedItem();
         List<Jugador> jugadores = new ArrayList<>();
-        ordenJugadores = new ArrayList<>(jugadores);
         Set<Character> letrasSacadas = new HashSet<>();
         resultadoArea.setText("");
 
@@ -146,35 +147,50 @@ public class PantallaRegistro extends JFrame {
             jugadores.add(new Jugador(nombre));
             if (!letrasSacadas.add(ficha.getLetra())) {
                 resultadoArea.setText("Fichas repetidas detectadas. Se debe repetir el sorteo.");
-
-                // Reiniciar fichas y botones para que vuelvan a sacar
                 for (int j = 0; j < cantidad; j++) {
                     fichasJugadores.set(j, null);
                     botonesFichas.get(j).setText("Sacar ficha");
-                    botonesFichas.get(j).setEnabled(true); // ✅ Rehabilita el botón
+                    botonesFichas.get(j).setEnabled(true);
                 }
                 return;
             }
         }
 
-        // Ordenar jugadores según la ficha
+        // Ordenar jugadores según ficha
         jugadores.sort((a, b) -> {
             Ficha fa = fichasJugadores.get(jugadores.indexOf(a));
             Ficha fb = fichasJugadores.get(jugadores.indexOf(b));
             return compararFichas(fa, fb);
         });
 
+        // Guardar el orden para uso posterior
+        ordenJugadores = new ArrayList<>(jugadores);
+
+        // Mostrar orden en el resultado
         StringBuilder sb = new StringBuilder("Orden de salida:\n");
         for (int i = 0; i < jugadores.size(); i++) {
             sb.append((i + 1)).append(". ")
               .append(jugadores.get(i).getNombre())
               .append(" (").append(fichasJugadores.get(i).getLetra()).append(")\n");
         }
-
         resultadoArea.setText(sb.toString());
 
-        Tablero tablero = new Tablero();
-        new TableroVistaSwing(tablero);
+        // Crear lista de nombres para Juego
+        List<String> nombres = jugadores.stream()
+                                       .map(Jugador::getNombre)
+                                       .collect(Collectors.toList());
+
+        // Crear el objeto Juego con los nombres ordenados y la ruta del diccionario
+        try {
+            juego = new Juego(nombres, "ruta/al/diccionario.txt"); // Ajusta esta ruta según tu estructura
+        } catch (IOException ex) {
+            JOptionPane.showMessageDialog(this, "Error al cargar el diccionario: " + ex.getMessage());
+            return;
+        }
+
+        // Crear y mostrar la vista del tablero
+        TableroVistaSwing vista = new TableroVistaSwing(juego);
+
         dispose();
     }
 
@@ -239,3 +255,5 @@ public class PantallaRegistro extends JFrame {
         SwingUtilities.invokeLater(PantallaRegistro::new);
     }
 }
+
+
