@@ -1,9 +1,5 @@
 package com.mycompany.scrabble;
 
-/**
- *
- * @author jos23
- */
 public class Tablero {
     public static final int FILAS = 15;
     public static final int COLUMNAS = 15;
@@ -19,8 +15,14 @@ public class Tablero {
         }
     }
     
-
-
+    public Tablero(Casilla[][] original){
+        matriz = new Casilla[FILAS][COLUMNAS];
+        for (int i = 0; i < FILAS; i++) {
+            for (int j = 0; j < COLUMNAS; j++) {
+                matriz[i][j] = original[i][j];
+            }
+        }
+    }
 
     private int obtenerBonificador(int x, int y) {
         // Triple Palabra (TRIPP)
@@ -72,7 +74,9 @@ public class Tablero {
         return Casilla.NONE;
     }
 
-
+    public Casilla[][] getMatriz(){
+        return matriz;
+    }
 
     // Métodos clave
     public void colocarFicha(int fila, int columna, Ficha ficha) {
@@ -86,6 +90,11 @@ public class Tablero {
     public Casilla obtenerCasilla(int fila, int columna) {
         return matriz[fila][columna];
     }
+    
+    public void cambiarCasilla(int fila, int columna, Casilla casilla){
+        matriz[fila][columna]=casilla;
+    }
+    
     public void quitarFichaDeTablero(int fila, int columna) {
     Casilla casilla = obtenerCasilla(fila, columna);
     casilla.quitarFicha();
