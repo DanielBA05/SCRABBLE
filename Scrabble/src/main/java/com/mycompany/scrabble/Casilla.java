@@ -1,13 +1,5 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
 package com.mycompany.scrabble;
 
-/**
- *
- * @author jos23
- */
 public class Casilla {
     private int x;
     private int y;
@@ -30,6 +22,15 @@ public class Casilla {
         this.ficha = null;
         this.bonificadorUsado = false;
     }
+    
+    public Casilla(Casilla original) {
+        this.x = original.x;
+        this.y = original.y;
+        this.multiplier = original.multiplier;
+        this.ficha = null;
+        this.bonificadorUsado = false;
+    }
+    
     public void quitarFicha() {
     this.ficha = null;
 }
