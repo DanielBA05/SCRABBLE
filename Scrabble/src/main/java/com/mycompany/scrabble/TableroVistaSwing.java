@@ -186,19 +186,19 @@ public class TableroVistaSwing extends JFrame {
     private void actualizarAtril() {
         atrilPanel.removeAll();
         List<Ficha> fichas = juego.getFichasJugadorActual();
+        List<Ficha> fichasSeleccionadas = juego.getFichasSeleccionadasParaCambio();
 
-        // Tamaño fijo para las fichas del atril
-        final int ANCHO_FICHA = 50;  // Puedes ajustar este valor según tus preferencias
+        final int ANCHO_FICHA = 50;
         final int ALTO_FICHA = 60;
 
         for (Ficha ficha : fichas) {
             JButton btnFicha = new JButton(ficha.getLetra() + "");
             btnFicha.setPreferredSize(new Dimension(ANCHO_FICHA, ALTO_FICHA));
             btnFicha.setMinimumSize(new Dimension(ANCHO_FICHA, ALTO_FICHA));
-            btnFicha.setMaximumSize(new Dimension(ANCHO_FICHA, ALTO_FICHA)); // Asegura tamaño fijo
+            btnFicha.setMaximumSize(new Dimension(ANCHO_FICHA, ALTO_FICHA));
             btnFicha.setFont(new Font("Arial", Font.BOLD, 24));
 
-            // Estilo visual mejorado
+            // Estilo visual
             btnFicha.setMargin(new Insets(5, 5, 5, 5));
             btnFicha.setFocusPainted(false);
             btnFicha.setBorder(BorderFactory.createCompoundBorder(
@@ -206,21 +206,33 @@ public class TableroVistaSwing extends JFrame {
                 BorderFactory.createEmptyBorder(5, 5, 5, 5)
             ));
 
-            // Destacar ficha seleccionada
+            // Resaltar según selección
             if (ficha == juego.getFichaSeleccionada()) {
                 btnFicha.setBackground(new Color(255, 255, 150));
                 btnFicha.setBorder(BorderFactory.createLineBorder(Color.RED, 2));
+            } else if (fichasSeleccionadas != null && fichasSeleccionadas.contains(ficha)) {
+                btnFicha.setBackground(new Color(150, 255, 150));
+                btnFicha.setBorder(BorderFactory.createLineBorder(Color.GREEN, 2));
             } else {
                 btnFicha.setBackground(new Color(230, 230, 230));
             }
 
             btnFicha.addActionListener(e -> {
-                if (juego.getFichaSeleccionada() == ficha) {
-                    juego.setFichaSeleccionada(null);
+                if (juego.isModoSeleccionCambio()) {
+                    if (fichasSeleccionadas.contains(ficha)) {
+                        juego.deseleccionarFichaParaCambio(ficha);
+                    } else {
+                        juego.seleccionarFichaParaCambio(ficha);
+                    }
+                    actualizarAtril();
                 } else {
-                    juego.setFichaSeleccionada(ficha);
+                    if (juego.getFichaSeleccionada() == ficha) {
+                        juego.setFichaSeleccionada(null);
+                    } else {
+                        juego.setFichaSeleccionada(ficha);
+                    }
+                    actualizarAtril();
                 }
-                actualizarAtril();
             });
 
             atrilPanel.add(btnFicha);
@@ -341,8 +353,21 @@ public class TableroVistaSwing extends JFrame {
         });
 
         btnCambiarFichas.addActionListener(e -> {
-            juego.robarFicha();
+            juego.cambiarFicha();
             actualizarTodo();
+
+            // Actualizar el texto del botón según el modo
+            if (juego.isModoSeleccionCambio()) {
+                btnCambiarFichas.setText("Confirmar Cambio");
+                btnTerminarTurno.setEnabled(false);
+                btnPasarTurno.setEnabled(false);
+                btnReiniciarJugada.setEnabled(false);
+            } else {
+                btnCambiarFichas.setText("Cambiar Fichas");
+                btnTerminarTurno.setEnabled(true);
+                btnPasarTurno.setEnabled(true);
+                btnReiniciarJugada.setEnabled(true);
+            }
         });
 
         btnReiniciarJugada.addActionListener(e -> {

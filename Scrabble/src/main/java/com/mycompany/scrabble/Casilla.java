@@ -13,14 +13,13 @@ public class Casilla {
     public static final int TRIPP = 4;  // Triple palabra
 
     private int multiplier;
-    private boolean bonificadorUsado;
 
     public Casilla(int x, int y, int multiplier) {
         this.x = x;
         this.y = y;
         this.multiplier = multiplier;
         this.ficha = null;
-        this.bonificadorUsado = false;
+
     }
     
     public Casilla(Casilla original) {
@@ -28,7 +27,6 @@ public class Casilla {
         this.y = original.y;
         this.multiplier = original.multiplier;
         this.ficha = null;
-        this.bonificadorUsado = false;
     }
     
     public void quitarFicha() {
@@ -49,10 +47,7 @@ public class Casilla {
     public int getMultiplier() {
         return multiplier;
     }
-    public boolean isBonificadorUsado() {
-        return bonificadorUsado;
-    }
-    public void setBonificadorUsado(boolean usado) { 
-        this.bonificadorUsado = usado;
+    public void disableMultiplier(){
+        this.multiplier = 0;
     }
 }

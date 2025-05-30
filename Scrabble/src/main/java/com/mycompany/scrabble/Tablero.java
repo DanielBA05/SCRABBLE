@@ -98,26 +98,5 @@ public class Tablero {
     public void quitarFichaDeTablero(int fila, int columna) {
     Casilla casilla = obtenerCasilla(fila, columna);
     casilla.quitarFicha();
-}
-    
-    //es un prototipo, de ser necesario lo pueden mover a otra clase
-    public void aplicarBonificadores(Casilla casilla, int[] valorLetra, int[] multiplicadorPalabra) {
-        if (!casilla.isBonificadorUsado()) {
-            switch (casilla.getMultiplier()) {
-                case Casilla.DOUL:
-                    valorLetra[0] *= 2;
-                    break;
-                case Casilla.TRIPL:
-                    valorLetra[0] *= 3;
-                    break;
-                case Casilla.DOUP:
-                    multiplicadorPalabra[0] *= 2;
-                    break;
-                case Casilla.TRIPP:
-                    multiplicadorPalabra[0] *= 3;
-                    break;
-            }
-            casilla.setBonificadorUsado(true);
-        }
     }
 }

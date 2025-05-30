@@ -4,6 +4,8 @@ import javax.swing.JOptionPane;
 import java.util.ArrayList;
 import java.util.List;
 import java.io.IOException;
+import java.util.HashSet;
+import java.util.Set;
 
 public class Juego {
     private List<Jugador> jugadores;
@@ -13,105 +15,39 @@ public class Juego {
     private Casilla[][] tableroCopiaInicioTurno;
     private List<Ficha> fichasAtrilInicioTurno;
     private Ficha fichaSeleccionada;
+    private List<Ficha> variasFichas;
     private boolean turnoTerminado;
     private boolean fichaRobada;
     private int cantJugadores;
     private final List<Casilla> fichasColocadasEsteTurno = new ArrayList<>();
     public Juez juez;
+    
+    // Variables para el cambio de fichas
+    private boolean modoSeleccionCambio = false;
+    private List<Ficha> fichasSeleccionadasCambio = new ArrayList<>();
 
-    public Juego(List<String> nombresJugadores, String rutaDiccionario) throws IOException {
-        jugadores = new ArrayList<>();
-        for (String nombre : nombresJugadores) {
-            jugadores.add(new Jugador(nombre));
-        }
+    public Juego(List<Jugador> jugadoresOrdenados) {
+        this.jugadores = new ArrayList<>(jugadoresOrdenados);
+        this.tablero = new Tablero();
+        this.monton = new MontonFichas();
+        this.juez = new Juez();
 
-        tablero = new Tablero();
-        monton = new MontonFichas();
-        juez = new Juez();
-
-        jugadorActualIndex = determinarPrimerJugador();
-        turnoTerminado = false;
-        fichaRobada = false;
-        cantJugadores = jugadores.size();
+        this.jugadorActualIndex = 0;
+        this.turnoTerminado = false;
+        this.fichaRobada = false;
+        this.cantJugadores = jugadores.size();
 
         repartirFichasIniciales();
         guardarEstadoInicialTurno();
     }
 
+    // Métodos de acceso
     public List<Casilla> getFichasColocadasEsteTurno() {
         return new ArrayList<>(fichasColocadasEsteTurno);
     }
 
     public List<Jugador> getJugadores() {
         return new ArrayList<>(jugadores);
-    }
-
-    private void repartirFichasIniciales() {
-        for (Jugador jugador : jugadores) {
-            while (jugador.getFichas().size() < 7) {
-                Ficha ficha = monton.robarFicha();
-                if (ficha != null) {
-                    jugador.agregarFicha(ficha);
-                } else {
-                    break;
-                }
-            }
-        }
-    }
-
-    private int determinarPrimerJugador() {
-        List<Ficha> fichasSorteo = new ArrayList<>();
-        List<Integer> indicesEmpatados = new ArrayList<>();
-
-        while (true) {
-            fichasSorteo.clear();
-            indicesEmpatados.clear();
-            char mejorLetra = 'Z' + 1;
-            int ganador = -1;
-
-            for (Jugador jugador : jugadores) {
-                Ficha ficha = monton.robarFicha();
-                if (ficha == null) continue;
-                fichasSorteo.add(ficha);
-                char letra = ficha.getLetra();
-
-                if (letra == '-') {
-                    mejorLetra = '-';
-                    indicesEmpatados.clear();
-                    indicesEmpatados.add(fichasSorteo.indexOf(ficha));
-                    break;
-                }
-
-                if (letra < mejorLetra) {
-                    mejorLetra = letra;
-                    ganador = fichasSorteo.indexOf(ficha);
-                    indicesEmpatados.clear();
-                    indicesEmpatados.add(ganador);
-                } else if (letra == mejorLetra) {
-                    indicesEmpatados.add(fichasSorteo.indexOf(ficha));
-                }
-            }
-
-            monton.devolverFichas(fichasSorteo);
-
-            if (indicesEmpatados.size() == 1) {
-                return indicesEmpatados.get(0);
-            }
-        }
-    }
-
-    private void guardarEstadoInicialTurno() {
-        tableroCopiaInicioTurno = new Casilla[Tablero.FILAS][Tablero.COLUMNAS];
-        for (int i = 0; i < Tablero.FILAS; i++) {
-            for (int j = 0; j < Tablero.COLUMNAS; j++) {
-                Casilla original = tablero.obtenerCasilla(i, j);
-                tableroCopiaInicioTurno[i][j] = new Casilla(original);
-            }
-        }
-        fichasAtrilInicioTurno = new ArrayList<>();
-        for (Ficha f : getJugadorActual().getFichas()) {
-            fichasAtrilInicioTurno.add(new Ficha(f));
-        }
     }
 
     public Jugador getJugadorActual() {
@@ -132,6 +68,134 @@ public class Juego {
 
     public void setFichaSeleccionada(Ficha ficha) {
         this.fichaSeleccionada = ficha;
+    }
+
+    public int getMonton() {
+        return monton.getCantidadFichas();
+    }
+
+    // Métodos para el cambio de fichas
+    public List<Ficha> getFichasSeleccionadasParaCambio() {
+        return new ArrayList<>(fichasSeleccionadasCambio);
+    }
+
+    public boolean isModoSeleccionCambio() {
+        return modoSeleccionCambio;
+    }
+
+    public void seleccionarFichaParaCambio(Ficha ficha) {
+        if (!fichasSeleccionadasCambio.contains(ficha)) {
+            fichasSeleccionadasCambio.add(ficha);
+        }
+    }
+
+    public void deseleccionarFichaParaCambio(Ficha ficha) {
+        fichasSeleccionadasCambio.remove(ficha);
+    }
+
+    public void cambiarFicha() {
+        if (modoSeleccionCambio) {
+            terminarCambioFichas();
+        } else {
+            iniciarCambioFichas();
+        }
+    }
+
+    private void iniciarCambioFichas() {
+        if (!turnoTerminado && fichasColocadasEsteTurno.isEmpty()) {
+            if (monton.getCantidadFichas() == 0) {
+                JOptionPane.showMessageDialog(null, "No hay fichas en el montón para cambiar.");
+                return;
+            }
+            
+            modoSeleccionCambio = true;
+            fichasSeleccionadasCambio.clear();
+            
+            int maxFichasCambio = Math.min(monton.getCantidadFichas(), getJugadorActual().getFichas().size());
+            JOptionPane.showMessageDialog(null, 
+                "Selecciona las fichas que deseas cambiar (máximo " + maxFichasCambio + 
+                "). Luego haz clic en 'Confirmar Cambio'.");
+        } else {
+            JOptionPane.showMessageDialog(null, 
+                "No puedes cambiar fichas después de colocar fichas en el tablero.");
+        }
+    }
+
+    public void terminarCambioFichas() {
+        if (fichasSeleccionadasCambio.isEmpty()) {
+            JOptionPane.showMessageDialog(null, "No se seleccionaron fichas para cambiar.");
+            modoSeleccionCambio = false;
+            return;
+        }
+
+        Jugador jugadorActual = getJugadorActual();
+        int fichasDisponiblesMonton = monton.getCantidadFichas();
+        int fichasACambiar = fichasSeleccionadasCambio.size();
+
+        if (fichasDisponiblesMonton < fichasACambiar) {
+            JOptionPane.showMessageDialog(null, 
+                "No hay suficientes fichas en el montón. Solo puedes cambiar " + 
+                fichasDisponiblesMonton + " fichas.");
+            return;
+        }
+
+        if (fichasACambiar > jugadorActual.getFichas().size()) {
+            JOptionPane.showMessageDialog(null, 
+                "No puedes cambiar más fichas de las que tienes en tu atril.");
+            return;
+        }
+
+        // Cambiar las fichas
+        List<Ficha> fichasADevolver = new ArrayList<>(fichasSeleccionadasCambio);
+        for (Ficha ficha : fichasSeleccionadasCambio) {
+            jugadorActual.getFichas().remove(ficha);
+        }
+
+        // Devolver las fichas al montón (usando el método correcto)
+        monton.devolverFichas(fichasADevolver);
+
+        // Robar nuevas fichas
+        for (int i = 0; i < fichasACambiar; i++) {
+            Ficha nuevaFicha = monton.robarFicha();
+            if (nuevaFicha != null) {
+                jugadorActual.agregarFicha(nuevaFicha);
+            }
+        }
+
+        JOptionPane.showMessageDialog(null, 
+            "Se han cambiado " + fichasACambiar + " fichas.");
+
+        modoSeleccionCambio = false;
+        fichasSeleccionadasCambio.clear();
+        siguienteTurno();
+    }
+
+    // Métodos del juego
+    private void repartirFichasIniciales() {
+        for (Jugador jugador : jugadores) {
+            while (jugador.getFichas().size() < 7) {
+                Ficha ficha = monton.robarFicha();
+                if (ficha != null) {
+                    jugador.agregarFicha(ficha);
+                } else {
+                    break;
+                }
+            }
+        }
+    }
+
+    private void guardarEstadoInicialTurno() {
+        tableroCopiaInicioTurno = new Casilla[Tablero.FILAS][Tablero.COLUMNAS];
+        for (int i = 0; i < Tablero.FILAS; i++) {
+            for (int j = 0; j < Tablero.COLUMNAS; j++) {
+                Casilla original = tablero.obtenerCasilla(i, j);
+                tableroCopiaInicioTurno[i][j] = new Casilla(original);
+            }
+        }
+        fichasAtrilInicioTurno = new ArrayList<>();
+        for (Ficha f : getJugadorActual().getFichas()) {
+            fichasAtrilInicioTurno.add(new Ficha(f));
+        }
     }
 
     public boolean colocarFichaEnTablero(Ficha ficha, int fila, int columna) {
@@ -173,22 +237,28 @@ public class Juego {
     private int calcularPuntos(List<String> palabras, List<Casilla> casillas) {
         int total = 0;
         for (String palabra : palabras) {
-            total += palabra.length() * 10;
+            System.out.println("total de letra kkkkk");
         }
         
         for (Casilla casilla : casillas) {
             switch (casilla.getMultiplier()) {
                 case Casilla.DOUL:
-                    total *= 2;
+                    System.out.println("aqui va doble letra");
+                    casilla.disableMultiplier();
                     break;
                 case Casilla.TRIPL:
-                    total *= 3;
+                    System.out.println("aqui va triple letra");
+                    casilla.disableMultiplier();
                     break;
                 case Casilla.DOUP:
-                    total += 10;
+                    System.out.println("aqui va doble palabra");
+                    casilla.disableMultiplier();
                     break;
                 case Casilla.TRIPP:
-                    total += 20;
+                    System.out.println("aqui va triple palabra");
+                    casilla.disableMultiplier();
+                    break;
+                default:
                     break;
             }
         }
@@ -196,17 +266,18 @@ public class Juego {
     }
 
     public void siguienteTurno() {
+        reiniciarJugada();
         while (getJugadorActual().getFichas().size() < 7 && monton.getCantidadFichas() > 0) {
             Ficha ficha = monton.robarFicha();
-            if (ficha != null) {
-                getJugadorActual().agregarFicha(ficha);
-            }
+            getJugadorActual().agregarFicha(ficha);
         }
 
         jugadorActualIndex = (jugadorActualIndex + 1) % jugadores.size();
         turnoTerminado = false;
         fichaRobada = false;
         fichaSeleccionada = null;
+        modoSeleccionCambio = false;
+        fichasSeleccionadasCambio.clear();
         fichasColocadasEsteTurno.clear();
         guardarEstadoInicialTurno();
     }
@@ -214,6 +285,8 @@ public class Juego {
     public void reiniciarJugada() {
         getJugadorActual().getFichas().clear();
         fichasColocadasEsteTurno.clear();
+        fichasSeleccionadasCambio.clear();
+        modoSeleccionCambio = false;
         
         for (int i = 0; i < Tablero.FILAS; i++) {
             for (int j = 0; j < Tablero.COLUMNAS; j++) {
@@ -225,7 +298,6 @@ public class Juego {
             for (int j = 0; j < Tablero.COLUMNAS; j++) {
                 Casilla c = tableroCopiaInicioTurno[i][j];
                 tablero.cambiarCasilla(i, j, new Casilla(c));
-                
             }
         }
         
@@ -236,77 +308,120 @@ public class Juego {
         fichaSeleccionada = null;
     }
 
-    public void robarFicha() {
-        if (!turnoTerminado && !fichaRobada && monton.getCantidadFichas() > 0) {
-            Ficha ficha = monton.robarFicha();
-            if (ficha != null) {
-                getJugadorActual().agregarFicha(ficha);
-                fichaRobada = true;
-                siguienteTurno();
-            }
-        } else {
-            JOptionPane.showMessageDialog(null, "No se pueden robar más fichas este turno o el montón está vacío.");
-        }
-    }
-
-    public int getMonton() {
-        return monton.getCantidadFichas();
-    }
-
     public List<String> getPalabrasFormadasEsteTurno(Juez juez, Tablero tablero, List<Casilla> casillasColocadasEsteTurno) {
         List<String> palabrasValidas = new ArrayList<>();
-        boolean[][] visitadoH = new boolean[Tablero.FILAS][Tablero.COLUMNAS];
-        boolean[][] visitadoV = new boolean[Tablero.FILAS][Tablero.COLUMNAS];
+        if (casillasColocadasEsteTurno.isEmpty()) {
+            return palabrasValidas;
+        }
 
-        for (Casilla casilla : casillasColocadasEsteTurno) {
-            // Obtener posición de la casilla de otra manera
-            int fila = -1;
-            int col = -1;
+        boolean esHorizontal = true;
+        boolean esVertical = true;
+        int filaInicial = casillasColocadasEsteTurno.get(0).getX();
+        int colInicial = casillasColocadasEsteTurno.get(0).getY();
 
-            // Buscar la posición de la casilla en el tablero
-            for (int i = 0; i < Tablero.FILAS; i++) {
-                for (int j = 0; j < Tablero.COLUMNAS; j++) {
-                    if (tablero.obtenerCasilla(i, j) == casilla) {
-                        fila = i;
-                        col = j;
-                        break;
-                    }
+        if (casillasColocadasEsteTurno.size() > 1) {
+            for (int i = 1; i < casillasColocadasEsteTurno.size(); i++) {
+                if (casillasColocadasEsteTurno.get(i).getX() != filaInicial) {
+                    esHorizontal = false;
                 }
-                if (fila != -1) break;
-            }
-
-            if (fila == -1 || col == -1) continue; // Casilla no encontrada
-
-            if (!visitadoH[fila][col]) {
-                StringBuilder palabraHorizontal = new StringBuilder();
-                int c = col;
-                while (c >= 0 && tablero.obtenerFicha(fila, c) != null) c--;
-                c++;
-                int inicio = c;
-                while (c < Tablero.COLUMNAS && tablero.obtenerFicha(fila, c) != null) {
-                    palabraHorizontal.append(tablero.obtenerFicha(fila, c).getLetra());
-                    visitadoH[fila][c] = true;
-                    c++;
-                }
-                if (c - inicio >= 2 && juez.esValida(palabraHorizontal.toString())) {
-                    palabrasValidas.add(palabraHorizontal.toString());
+                if (casillasColocadasEsteTurno.get(i).getY() != colInicial) {
+                    esVertical = false;
                 }
             }
+        }
 
-            if (!visitadoV[fila][col]) {
-                StringBuilder palabraVertical = new StringBuilder();
-                int f = fila;
-                while (f >= 0 && tablero.obtenerFicha(f, col) != null) f--;
-                f++;
-                int inicio = f;
-                while (f < Tablero.FILAS && tablero.obtenerFicha(f, col) != null) {
-                    palabraVertical.append(tablero.obtenerFicha(f, col).getLetra());
-                    visitadoV[f][col] = true;
-                    f++;
+        if (!esHorizontal && !esVertical) {
+            JOptionPane.showMessageDialog(null, "Las fichas deben colocarse en una sola línea (horizontal o vertical).");
+            return new ArrayList<>();
+        }
+
+        Set<String> palabrasEncontradas = new HashSet<>();
+
+        if (esHorizontal) {
+            int minCol = casillasColocadasEsteTurno.stream().mapToInt(c -> c.getY()).min().orElse(colInicial);
+            int maxCol = casillasColocadasEsteTurno.stream().mapToInt(c -> c.getY()).max().orElse(colInicial);
+
+            StringBuilder palabraHoriz = new StringBuilder();
+            int currentCol = minCol;
+            while (currentCol >= 0 && tablero.obtenerFicha(filaInicial, currentCol) != null) {
+                currentCol--;
+            }
+            currentCol++;
+
+            while (currentCol < Tablero.COLUMNAS && tablero.obtenerFicha(filaInicial, currentCol) != null) {
+                palabraHoriz.append(tablero.obtenerFicha(filaInicial, currentCol).getLetra());
+                currentCol++;
+            }
+
+            if (palabraHoriz.length() >= 2) {
+                palabrasEncontradas.add(palabraHoriz.toString());
+            }
+
+            for (Casilla c : casillasColocadasEsteTurno) {
+                StringBuilder palabraVert = new StringBuilder();
+                int currentRow = c.getX();
+                int currentColVert = c.getY();
+
+                int r = currentRow;
+                while (r >= 0 && tablero.obtenerFicha(r, currentColVert) != null) {
+                    r--;
                 }
-                if (f - inicio >= 2 && juez.esValida(palabraVertical.toString())) {
-                    palabrasValidas.add(palabraVertical.toString());
+                r++;
+
+                while (r < Tablero.FILAS && tablero.obtenerFicha(r, currentColVert) != null) {
+                    palabraVert.append(tablero.obtenerFicha(r, currentColVert).getLetra());
+                    r++;
                 }
+                if (palabraVert.length() >= 2) {
+                    palabrasEncontradas.add(palabraVert.toString());
+                }
+            }
+        } else if (esVertical) {
+            int minFila = casillasColocadasEsteTurno.stream().mapToInt(c -> c.getX()).min().orElse(filaInicial);
+            int maxFila = casillasColocadasEsteTurno.stream().mapToInt(c -> c.getX()).max().orElse(filaInicial);
+
+            StringBuilder palabraVert = new StringBuilder();
+            int currentRow = minFila;
+            while (currentRow >= 0 && tablero.obtenerFicha(currentRow, colInicial) != null) {
+                currentRow--;
+            }
+            currentRow++;
+
+            while (currentRow < Tablero.FILAS && tablero.obtenerFicha(currentRow, colInicial) != null) {
+                palabraVert.append(tablero.obtenerFicha(currentRow, colInicial).getLetra());
+                currentRow++;
+            }
+            if (palabraVert.length() >= 2) {
+                palabrasEncontradas.add(palabraVert.toString());
+            }
+
+            for (Casilla c : casillasColocadasEsteTurno) {
+                StringBuilder palabraHoriz = new StringBuilder();
+                int currentColHoriz = c.getY();
+                int currentRowHoriz = c.getX();
+
+                int col = currentColHoriz;
+                while (col >= 0 && tablero.obtenerFicha(currentRowHoriz, col) != null) {
+                    col--;
+                }
+                col++;
+
+                while (col < Tablero.COLUMNAS && tablero.obtenerFicha(currentRowHoriz, col) != null) {
+                    palabraHoriz.append(tablero.obtenerFicha(currentRowHoriz, col).getLetra());
+                    col++;
+                }
+                if (palabraHoriz.length() >= 2) {
+                    palabrasEncontradas.add(palabraHoriz.toString());
+                }
+            }
+        }
+
+        for (String p : palabrasEncontradas) {
+            if (juez.esValida(p)) {
+                palabrasValidas.add(p);
+            } else {
+                JOptionPane.showMessageDialog(null, "La palabra '" + p + "' no es válida en el diccionario.");
+                return new ArrayList<>();
             }
         }
 

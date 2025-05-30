@@ -5,8 +5,9 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.util.*;
 import java.util.List;
-import java.util.stream.Collectors;
-import java.io.IOException;
+import java.util.stream.Collectors; // Aunque ya no se usa, lo mantendremos por si acaso.
+import java.io.IOException; // Esta importación puede volverse innecesaria si no se lanza IOException.
+import static javax.swing.WindowConstants.EXIT_ON_CLOSE;
 
 public class PantallaRegistro extends JFrame {
     private JComboBox<Integer> selectorJugadores;
@@ -17,7 +18,7 @@ public class PantallaRegistro extends JFrame {
     private JTextArea resultadoArea;
     private JButton botonIniciar;
     private MontonFichas monton;
-    private List<Jugador> ordenJugadores;
+    private List<Jugador> ordenJugadores; // Esta lista guardará los objetos Jugador ya ordenados
     private Juego juego;
 
     public PantallaRegistro() {
@@ -158,33 +159,70 @@ public class PantallaRegistro extends JFrame {
 
         // Ordenar jugadores según ficha
         jugadores.sort((a, b) -> {
-            Ficha fa = fichasJugadores.get(jugadores.indexOf(a));
-            Ficha fb = fichasJugadores.get(jugadores.indexOf(b));
+            // Se necesita una forma de asociar el jugador 'a' o 'b' con la ficha que sacó.
+            // La forma actual 'jugadores.indexOf(a)' puede ser ineficiente si la lista es grande.
+            // Para simplificar, asumiremos que el índice en 'jugadores' corresponde al de 'fichasJugadores'.
+            // Sin embargo, si 'jugadores' ha sido reordenado o filtrado, esto podría fallar.
+            // Una solución más robusta sería usar un Map<Jugador, Ficha> desde el principio.
+            // Por ahora, para que funcione, nos aseguraremos de que 'jugadores' y 'fichasJugadores' estén alineados
+            // o que la asociación Ficha-Jugador se haga de otra manera.
+
+            // La forma más robusta es como lo haces en actualizarResultadoSalida(), usando un mapa.
+            // Pero como 'fichasJugadores' está indexado directamente a los campos de texto,
+            // y 'jugadores' se crea en orden de los campos de texto ANTES de ser ordenado,
+            // el '.indexOf(a)' aquí puede ser problemático si 'jugadores' ya fue alterado.
+
+            // Para este punto, 'jugadores' NO está ordenado, y 'fichasJugadores' SÍ guarda la ficha de cada índice.
+            // La lógica para la comparación necesita el índice ORIGINAL del jugador.
+            // Una manera de hacerlo sería mantener un mapa temporal o asociar la ficha al Jugador.
+            // Para mantener la lógica actual, asumiremos que 'jugadores' y 'fichasJugadores'
+            // guardan la relación por índice inicial.
+
+            // Mejor aún: Creamos el mapa que ya usas en actualizarResultadoSalida para ser coherentes.
+            Map<Jugador, Ficha> mapaFichasParaSorteo = new HashMap<>();
+            for (int i = 0; i < cantidad; i++) {
+                mapaFichasParaSorteo.put(jugadores.get(i), fichasJugadores.get(i));
+            }
+
+            Ficha fa = mapaFichasParaSorteo.get(a);
+            Ficha fb = mapaFichasParaSorteo.get(b);
             return compararFichas(fa, fb);
         });
 
-        // Guardar el orden para uso posterior
-        ordenJugadores = new ArrayList<>(jugadores);
 
-        // Mostrar orden en el resultado
+        // Guardar el orden para uso posterior
+        ordenJugadores = new ArrayList<>(jugadores); // ¡Aquí se guarda el orden definitivo de Jugador!
+
+        // Mostrar orden en el resultado de la pantalla de registro
         StringBuilder sb = new StringBuilder("Orden de salida:\n");
-        for (int i = 0; i < jugadores.size(); i++) {
+        for (int i = 0; i < ordenJugadores.size(); i++) {
+            // Debes obtener la ficha del jugador en el orden actual para mostrarla.
+            // Como 'fichasJugadores' ya no está alineado con 'ordenJugadores',
+            // necesitamos encontrar la ficha original de cada jugador.
+            // Para simplificar, podemos volver a usar 'mapaFichasParaSorteo'.
+            Jugador jugadorActual = ordenJugadores.get(i);
+            Ficha fichaDelJugador = null;
+            for (int j = 0; j < cantidad; j++) {
+                if (camposNombres.get(j).getText().trim().equals(jugadorActual.getNombre())) {
+                    fichaDelJugador = fichasJugadores.get(j);
+                    break;
+                }
+            }
+
             sb.append((i + 1)).append(". ")
-              .append(jugadores.get(i).getNombre())
-              .append(" (").append(fichasJugadores.get(i).getLetra()).append(")\n");
+              .append(jugadorActual.getNombre())
+              .append(" (").append(fichaDelJugador != null ? fichaDelJugador.getLetra() : "?").append(")\n");
         }
         resultadoArea.setText(sb.toString());
 
-        // Crear lista de nombres para Juego
-        List<String> nombres = jugadores.stream()
-                                       .map(Jugador::getNombre)
-                                       .collect(Collectors.toList());
-
-        // Crear el objeto Juego con los nombres ordenados y la ruta del diccionario
+        // Crear el objeto Juego con los JUGADORES ordenados
+        // y sin la necesidad de la ruta del diccionario aquí
         try {
-            juego = new Juego(nombres, "ruta/al/diccionario.txt"); // Ajusta esta ruta según tu estructura
-        } catch (IOException ex) {
-            JOptionPane.showMessageDialog(this, "Error al cargar el diccionario: " + ex.getMessage());
+            //juego = new Juego(nombres, "ruta/al/diccionario.txt"); // LÍNEA ANTERIOR CON ERROR
+            juego = new Juego(ordenJugadores); // ¡LÍNEA CORRECTA AHORA! Pasar la List<Jugador> ordenada
+        } catch (Exception ex) { // Capturar Exception general, ya que Juez ya maneja IOException internamente.
+            JOptionPane.showMessageDialog(this, "Error al iniciar el juego: " + ex.getMessage());
+            ex.printStackTrace(); // Para depuración
             return;
         }
 
@@ -196,7 +234,7 @@ public class PantallaRegistro extends JFrame {
 
     private void actualizarResultadoSalida() {
         int cantidad = (Integer) selectorJugadores.getSelectedItem();
-        List<Jugador> jugadores = new ArrayList<>();
+        List<Jugador> jugadoresActuales = new ArrayList<>(); // Usamos un nombre diferente para evitar confusión
         Map<Jugador, Ficha> mapaFichas = new HashMap<>();
         Set<Character> letrasSacadas = new HashSet<>();
 
@@ -208,25 +246,31 @@ public class PantallaRegistro extends JFrame {
                 return;
             }
             Jugador jugador = new Jugador(nombre);
-            jugadores.add(jugador);
+            jugadoresActuales.add(jugador);
             mapaFichas.put(jugador, ficha);
             if (!letrasSacadas.add(ficha.getLetra())) {
                 resultadoArea.setText("Fichas repetidas detectadas. Se debe repetir el sorteo.");
+                // Restablecer botones y fichas para un nuevo sorteo
+                for (int j = 0; j < cantidad; j++) {
+                    fichasJugadores.set(j, null);
+                    botonesFichas.get(j).setText("Sacar ficha");
+                    botonesFichas.get(j).setEnabled(true);
+                }
                 return;
             }
         }
 
-        jugadores.sort((a, b) -> {
+        jugadoresActuales.sort((a, b) -> {
             Ficha fa = mapaFichas.get(a);
             Ficha fb = mapaFichas.get(b);
             return compararFichas(fa, fb);
         });
 
         StringBuilder sb = new StringBuilder("Orden de salida (parcial):\n");
-        for (int i = 0; i < jugadores.size(); i++) {
-            Ficha ficha = mapaFichas.get(jugadores.get(i));
+        for (int i = 0; i < jugadoresActuales.size(); i++) {
+            Ficha ficha = mapaFichas.get(jugadoresActuales.get(i));
             sb.append((i + 1)).append(". ")
-              .append(jugadores.get(i).getNombre())
+              .append(jugadoresActuales.get(i).getNombre())
               .append(" (").append(ficha.getLetra()).append(")\n");
         }
 
@@ -255,5 +299,3 @@ public class PantallaRegistro extends JFrame {
         SwingUtilities.invokeLater(PantallaRegistro::new);
     }
 }
-
-

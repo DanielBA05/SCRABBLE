@@ -29,6 +29,7 @@ public class MontonFichas {
         inicializarFichas();
     }
     
+    
     private void inicializarFichas(){
         for (int i = 0; i < 27; i++){ //nos va a servir como indice para tanto letras como cantidades
             for (int j = 1; j <= cantidades[i]; j++){ //esto va a ser para que se hagan la cantidad de repeticiones determinada para cada letra
@@ -56,7 +57,7 @@ public class MontonFichas {
     Collections.shuffle(fichas); //y revolvemos la lista
     }
 
-        public Ficha robarFicha(){
+    public Ficha robarFicha(){
         if (fichas.isEmpty()){ 
             return null; //si no existen más fichas, no hay nada que pueda robar
         }
@@ -65,8 +66,9 @@ public class MontonFichas {
         return robada; //retornamos la ficha
     }
     public int getCantidadFichas() {
-    return fichas.size();
-}
+        return fichas.size();
+    }
+    
     public void devolverFichas(List<Ficha> fichasDevueltas){
         for (Ficha devuelta : fichasDevueltas){ //para cada ficha devuelta 
             fichas.add(devuelta); //se vuelve a agregar al montón
