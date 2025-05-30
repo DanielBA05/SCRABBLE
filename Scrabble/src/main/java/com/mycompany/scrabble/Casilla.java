@@ -26,7 +26,7 @@ public class Casilla {
         this.x = original.x;
         this.y = original.y;
         this.multiplier = original.multiplier;
-        this.ficha = null;
+        this.ficha = original.ficha != null ? new Ficha(original.ficha) : null;
     }
     
     public void quitarFicha() {
