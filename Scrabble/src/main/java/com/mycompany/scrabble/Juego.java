@@ -24,6 +24,10 @@ public class Juego {
     // Variables para el cambio de fichas
     private boolean modoSeleccionCambio = false;
     private List<Ficha> fichasSeleccionadasCambio = new ArrayList<>();
+    //variables pero para separar la primera jugada de las demás
+    private boolean primeraJugada = true;
+    private static final int CENTRO_FILA = Tablero.FILAS / 2;
+    private static final int CENTRO_COLUMNA = Tablero.COLUMNAS / 2;
 
     public Juego(List<Jugador> jugadoresOrdenados) {
         this.jugadores = new ArrayList<>(jugadoresOrdenados);
@@ -202,6 +206,14 @@ public class Juego {
     public boolean colocarFichaEnTablero(Ficha ficha, int fila, int columna) {
         if (ficha == null) return false;
         
+       
+        if (primeraJugada && (fila != CENTRO_FILA || columna != CENTRO_COLUMNA)) {
+            JOptionPane.showMessageDialog(null, 
+                "La primera ficha debe colocarse en el centro del tablero (" + 
+                CENTRO_FILA + "," + CENTRO_COLUMNA + ")");
+            return false;
+        }
+        
         Casilla casilla = tablero.obtenerCasilla(fila, columna);
         if (casilla == null) return false;
         
@@ -209,6 +221,11 @@ public class Juego {
             casilla.setFicha(ficha);
             getJugadorActual().removerFicha(ficha);
             fichasColocadasEsteTurno.add(casilla);
+            
+            
+            if (primeraJugada) {
+                primeraJugada = false;
+            }
             return true;
         } else {
             JOptionPane.showMessageDialog(null, "La casilla ya está ocupada.");
@@ -221,6 +238,24 @@ public class Juego {
             JOptionPane.showMessageDialog(null, "No has colocado ninguna ficha este turno.");
             return false;
         }
+        
+        
+        if (primeraJugada) {
+            boolean centroOcupado = false;
+            for (Casilla casilla : casillasColocadasEsteTurno) {
+                if (casilla.getX() == CENTRO_FILA && casilla.getY() == CENTRO_COLUMNA) {
+                    centroOcupado = true;
+                    break;
+                }
+            }
+            if (!centroOcupado) {
+                JOptionPane.showMessageDialog(null, 
+                    "La primera jugada debe incluir la casilla central (" + 
+                    CENTRO_FILA + "," + CENTRO_COLUMNA + ")");
+                return false;
+            }
+        }
+        
         List<String> palabras = getPalabrasFormadasEsteTurno(juez, tablero, casillasColocadasEsteTurno);
 
         if (palabras.isEmpty()) {
@@ -231,6 +266,12 @@ public class Juego {
         int puntos = calcularPuntos(palabras, casillasColocadasEsteTurno);
         getJugadorActual().sumarPuntos(puntos);
         turnoTerminado = true;
+        
+     
+        if (primeraJugada) {
+            primeraJugada = false;
+        }
+        
         siguienteTurno();
         return true;
     }
@@ -288,30 +329,42 @@ public class Juego {
     }
 
     public void reiniciarJugada() {
-        getJugadorActual().getFichas().clear();
-        fichasColocadasEsteTurno.clear();
-        fichasSeleccionadasCambio.clear();
-        modoSeleccionCambio = false;
-        
-        for (int i = 0; i < Tablero.FILAS; i++) {
-            for (int j = 0; j < Tablero.COLUMNAS; j++) {
-                tablero.quitarFichaDeTablero(i, j);
-            }
+    getJugadorActual().getFichas().clear();
+    fichasColocadasEsteTurno.clear();
+    fichasSeleccionadasCambio.clear();
+    modoSeleccionCambio = false;
+
+    for (int i = 0; i < Tablero.FILAS; i++) {
+        for (int j = 0; j < Tablero.COLUMNAS; j++) {
+            tablero.quitarFichaDeTablero(i, j);
         }
-        
-        for (int i = 0; i < Tablero.FILAS; i++) {
-            for (int j = 0; j < Tablero.COLUMNAS; j++) {
-                Casilla c = tableroCopiaInicioTurno[i][j];
-                tablero.cambiarCasilla(i, j, new Casilla(c));
-            }
-        }
-        
-        for (Ficha f : fichasAtrilInicioTurno) {
-            getJugadorActual().agregarFicha(new Ficha(f));
-        }
-        
-        fichaSeleccionada = null;
     }
+
+    for (int i = 0; i < Tablero.FILAS; i++) {
+        for (int j = 0; j < Tablero.COLUMNAS; j++) {
+            Casilla c = tableroCopiaInicioTurno[i][j];
+            tablero.cambiarCasilla(i, j, new Casilla(c));
+        }
+    }
+
+    for (Ficha f : fichasAtrilInicioTurno) {
+        getJugadorActual().agregarFicha(new Ficha(f));
+    }
+
+    boolean tableroVacio = true;
+    for (int i = 0; i < Tablero.FILAS; i++) {
+        for (int j = 0; j < Tablero.COLUMNAS; j++) {
+            if (tablero.obtenerCasilla(i, j).getFicha() != null) {
+                tableroVacio = false;
+                break;
+            }
+        }
+        if (!tableroVacio) break;
+    }
+    primeraJugada = tableroVacio;
+
+    fichaSeleccionada = null;
+}
 
     public List<String> getPalabrasFormadasEsteTurno(Juez juez, Tablero tablero, List<Casilla> casillasColocadasEsteTurno) {
         List<String> palabrasValidas = new ArrayList<>();
