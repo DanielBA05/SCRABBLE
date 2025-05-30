@@ -180,8 +180,10 @@ public class TableroVistaSwing extends JFrame {
     }
 
     private void actualizarJugadorActual() {
-        jugadorActualLabel.setText("Turno de: " + juego.getJugadorActual().getNombre());
-    }
+    Jugador jugadorActual = juego.getJugadorActual();
+    jugadorActualLabel.setText("<html>Turno de: " + jugadorActual.getNombre() + 
+                             "<br>Puntos: " + jugadorActual.getPuntos() + "</html>");
+}
 
     private void actualizarAtril() {
         atrilPanel.removeAll();

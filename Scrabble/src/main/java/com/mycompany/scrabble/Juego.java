@@ -267,7 +267,6 @@ public class Juego {
     }
 
     public void siguienteTurno() {
-        reiniciarJugada();
         while (getJugadorActual().getFichas().size() < 7 && monton.getCantidadFichas() > 0) {
             Ficha ficha = monton.robarFicha();
             getJugadorActual().agregarFicha(ficha);
