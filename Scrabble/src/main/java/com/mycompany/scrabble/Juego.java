@@ -237,31 +237,37 @@ public class Juego {
 
     private int calcularPuntos(List<String> palabras, List<Casilla> casillas) {
         int total = 0;
-        for (String palabra : palabras) {
-            System.out.println("total de letra kkkkk");
-        }
-        
-        for (Casilla casilla : casillas) {
-            switch (casilla.getMultiplier()) {
-                case Casilla.DOUL:
-                    System.out.println("aqui va doble letra");
-                    casilla.disableMultiplier();
-                    break;
-                case Casilla.TRIPL:
-                    System.out.println("aqui va triple letra");
-                    casilla.disableMultiplier();
-                    break;
-                case Casilla.DOUP:
-                    System.out.println("aqui va doble palabra");
-                    casilla.disableMultiplier();
-                    break;
-                case Casilla.TRIPP:
-                    System.out.println("aqui va triple palabra");
-                    casilla.disableMultiplier();
-                    break;
-                default:
-                    break;
+        for (String palabra : palabras) { 
+            int puntosPalabra = 0; 
+            int multiplicarPor = 1;
+            for (int i = 0; i < palabra.length() && i < casillas.size(); i++){
+                Casilla casilla = casillas.get(i);
+                Ficha actual = casilla.getFicha();
+                switch(casilla.getMultiplier()){
+                    case Casilla.DOUL:
+                        puntosPalabra += (2 * actual.getPuntos());
+                        casilla.disableMultiplier();
+                        break;
+                    case Casilla.TRIPL:
+                        puntosPalabra += (3 * actual.getPuntos());
+                        casilla.disableMultiplier();
+                        break;
+                    case Casilla.DOUP:
+                        multiplicarPor *= 2;
+                        casilla.disableMultiplier();
+                        break;
+                    case Casilla.TRIPP:
+                        multiplicarPor *= 3;
+                        casilla.disableMultiplier();
+                        break;
+                    default: 
+                        puntosPalabra += actual.getPuntos();
+                        break;
+                }
             }
+            total += (puntosPalabra * multiplicarPor);
+            casillas = casillas.subList(palabra.length(), casillas.size());
+            
         }
         return total;
     }
