@@ -17,7 +17,6 @@ public class Juego {
     private Ficha fichaSeleccionada;
     private List<Ficha> variasFichas;
     private boolean turnoTerminado;
-    private boolean fichaRobada;
     private int cantJugadores;
     private final List<Casilla> fichasColocadasEsteTurno = new ArrayList<>();
     public Juez juez;
@@ -34,7 +33,6 @@ public class Juego {
 
         this.jugadorActualIndex = 0;
         this.turnoTerminado = false;
-        this.fichaRobada = false;
         this.cantJugadores = jugadores.size();
 
         repartirFichasIniciales();
@@ -107,7 +105,6 @@ public class Juego {
                 JOptionPane.showMessageDialog(null, "No hay fichas en el montón para cambiar.");
                 return;
             }
-            
             modoSeleccionCambio = true;
             fichasSeleccionadasCambio.clear();
             
@@ -151,19 +148,23 @@ public class Juego {
             jugadorActual.getFichas().remove(ficha);
         }
 
-        // Devolver las fichas al montón (usando el método correcto)
+        // Devolver las fichas al montón
         monton.devolverFichas(fichasADevolver);
 
         // Robar nuevas fichas
         for (int i = 0; i < fichasACambiar; i++) {
             Ficha nuevaFicha = monton.robarFicha();
-            if (nuevaFicha != null) {
-                jugadorActual.agregarFicha(nuevaFicha);
-            }
+            jugadorActual.agregarFicha(nuevaFicha);
         }
 
         JOptionPane.showMessageDialog(null, 
             "Se han cambiado " + fichasACambiar + " fichas.");
+        
+        fichasAtrilInicioTurno = new ArrayList<>();
+        for (Ficha f : jugadorActual.getFichas()) {
+            fichasAtrilInicioTurno.add(new Ficha(f)); 
+    
+        }
 
         modoSeleccionCambio = false;
         fichasSeleccionadasCambio.clear();
@@ -274,7 +275,6 @@ public class Juego {
 
         jugadorActualIndex = (jugadorActualIndex + 1) % jugadores.size();
         turnoTerminado = false;
-        fichaRobada = false;
         fichaSeleccionada = null;
         modoSeleccionCambio = false;
         fichasSeleccionadasCambio.clear();
