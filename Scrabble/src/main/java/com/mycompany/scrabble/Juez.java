@@ -12,7 +12,7 @@ public class Juez {
     public Juez() {
         diccionario = new HashSet<>();
         try {
-            InputStream is = getClass().getClassLoader().getResourceAsStream("resources/Diccionario.txt");
+            InputStream is = getClass().getClassLoader().getResourceAsStream("Diccionario.txt");
             if (is == null) {
                 System.out.println("No se encontró el diccionario.");
                 return;
