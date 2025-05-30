@@ -31,30 +31,31 @@ public class MontonFichas {
     
     
     private void inicializarFichas(){
-        for (int i = 0; i < 27; i++){ //nos va a servir como indice para tanto letras como cantidades
-            for (int j = 1; j <= cantidades[i]; j++){ //esto va a ser para que se hagan la cantidad de repeticiones determinada para cada letra
-                if ((i >= 0) && (i <= 9)){ //es decir, si esta en el primer grupo de letras
-                    fichas.add(new Ficha(letras[i], 1)); //si está entre A y T (esas incluidas), vale 1, asi que ponemos eso en la parte de puntos
-                } else if (i == 10 || i == 11){ 
-                    fichas.add(new Ficha(letras[i], 2)); //D y G valen 2
+        for (int i = 0; i < 26; i++){ 
+            for (int j = 1; j <= cantidades[i]; j++){
+                if ((i >= 0) && (i <= 9)){
+                    fichas.add(new Ficha(letras[i], 1));
+                } else if (i == 10 || i == 11){
+                    fichas.add(new Ficha(letras[i], 2));
                 } else if (i >= 12 && i <= 15){
-                    fichas.add(new Ficha(letras[i], 3)); //entre C y P valen 3
+                    fichas.add(new Ficha(letras[i], 3));
                 } else if (i >= 16 && i <= 19){
-                    fichas.add(new Ficha(letras[i], 4)); //entre H y Y valen 4
+                    fichas.add(new Ficha(letras[i], 4));
                 } else if (i == 20){
-                    fichas.add(new Ficha(letras[i], 5)); //Q es 5
+                    fichas.add(new Ficha(letras[i], 5));
                 } else if (i >= 21 && i <= 25){
-                    fichas.add(new Ficha(letras[i], 8)); //entre J y X valen 8
+                    fichas.add(new Ficha(letras[i], 8));
                 } else {
-                    fichas.add(new Ficha(letras[i], 10)); //y Z vale 10
+                    fichas.add(new Ficha(letras[i], 10));
                 }
             }
         }
-        
-    fichas.add(new Ficha('-', 0)); //agregamos dos comodines que no sabia como nombrar
-    fichas.add(new Ficha('-', 0));
-    
-    Collections.shuffle(fichas); //y revolvemos la lista
+
+        // Agregar los dos comodines correctamente
+        fichas.add(new Ficha()); // Comodín 1
+        fichas.add(new Ficha()); // Comodín 2
+
+        Collections.shuffle(fichas);
     }
 
     public Ficha robarFicha(){

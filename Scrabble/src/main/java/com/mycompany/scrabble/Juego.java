@@ -205,24 +205,50 @@ public class Juego {
 
     public boolean colocarFichaEnTablero(Ficha ficha, int fila, int columna) {
         if (ficha == null) return false;
-        
-       
+
         if (primeraJugada && (fila != CENTRO_FILA || columna != CENTRO_COLUMNA)) {
             JOptionPane.showMessageDialog(null, 
                 "La primera ficha debe colocarse en el centro del tablero (" + 
                 CENTRO_FILA + "," + CENTRO_COLUMNA + ")");
             return false;
         }
-        
+
         Casilla casilla = tablero.obtenerCasilla(fila, columna);
         if (casilla == null) return false;
-        
+
         if (casilla.getFicha() == null) {
-            casilla.setFicha(ficha);
-            getJugadorActual().removerFicha(ficha);
+            // Si es un comodín, pedir al usuario que elija la letra
+            if (ficha.esComodin()) {
+                String letraStr = JOptionPane.showInputDialog(null, 
+                    "Elija la letra que representará este comodín (A-Z):", 
+                    "Asignar letra a comodín", 
+                    JOptionPane.QUESTION_MESSAGE);
+
+                if (letraStr == null || letraStr.isEmpty() || letraStr.length() != 1) {
+                    return false; // El usuario canceló o no ingresó una letra válida
+                }
+
+                char letraElegida = Character.toUpperCase(letraStr.charAt(0));
+                if (letraElegida < 'A' || letraElegida > 'Z') {
+                    JOptionPane.showMessageDialog(null, 
+                        "Por favor ingrese una letra válida (A-Z).");
+                    return false;
+                }
+
+                // Crear una copia del comodín con la letra asignada
+                Ficha comodinConLetra = new Ficha(ficha);
+                comodinConLetra.setLetra(letraElegida);
+                comodinConLetra.setPuntos(0); // Los comodines siempre valen 0 puntos
+
+                casilla.setFicha(comodinConLetra);
+                getJugadorActual().removerFicha(ficha);
+            } else {
+                casilla.setFicha(ficha);
+                getJugadorActual().removerFicha(ficha);
+            }
+
             fichasColocadasEsteTurno.add(casilla);
-            
-            
+
             if (primeraJugada) {
                 primeraJugada = false;
             }

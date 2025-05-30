@@ -350,6 +350,8 @@ public class TableroVistaSwing extends JFrame {
         });
 
         btnPasarTurno.addActionListener(e -> {
+            juego.reiniciarJugada();
+            actualizarTodo();
             juego.siguienteTurno();
             actualizarTodo();
         });
