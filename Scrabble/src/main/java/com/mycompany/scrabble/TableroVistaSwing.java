@@ -194,11 +194,14 @@ public class TableroVistaSwing extends JFrame {
         final int ALTO_FICHA = 60;
 
         for (Ficha ficha : fichas) {
-            JButton btnFicha = new JButton(ficha.getLetra() + "");
-            btnFicha.setPreferredSize(new Dimension(ANCHO_FICHA, ALTO_FICHA));
-            btnFicha.setMinimumSize(new Dimension(ANCHO_FICHA, ALTO_FICHA));
-            btnFicha.setMaximumSize(new Dimension(ANCHO_FICHA, ALTO_FICHA));
-            btnFicha.setFont(new Font("Arial", Font.BOLD, 24));
+    JButton btnFicha = new JButton("<html><div style='text-align: center;'>"
+        + ficha.getLetra() + "<br>"
+        + "<small>" + ficha.getPuntos() + "</small></div></html>");
+    
+    btnFicha.setPreferredSize(new Dimension(ANCHO_FICHA, ALTO_FICHA));
+    btnFicha.setMinimumSize(new Dimension(ANCHO_FICHA, ALTO_FICHA));
+    btnFicha.setMaximumSize(new Dimension(ANCHO_FICHA, ALTO_FICHA));
+    btnFicha.setFont(new Font("Arial", Font.BOLD, 24));
 
             // Estilo visual
             btnFicha.setMargin(new Insets(5, 5, 5, 5));

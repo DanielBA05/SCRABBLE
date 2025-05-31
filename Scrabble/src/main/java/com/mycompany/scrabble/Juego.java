@@ -24,7 +24,7 @@ public class Juego {
     // Variables para el cambio de fichas
     private boolean modoSeleccionCambio = false;
     private List<Ficha> fichasSeleccionadasCambio = new ArrayList<>();
-    //variables pero para separar la primera jugada de las demás
+    //variables para controlar la primera jugada
     private boolean primeraJugada = true;
     private static final int CENTRO_FILA = Tablero.FILAS / 2;
     private static final int CENTRO_COLUMNA = Tablero.COLUMNAS / 2;
@@ -166,8 +166,7 @@ public class Juego {
         
         fichasAtrilInicioTurno = new ArrayList<>();
         for (Ficha f : jugadorActual.getFichas()) {
-            fichasAtrilInicioTurno.add(new Ficha(f)); 
-    
+            fichasAtrilInicioTurno.add(new Ficha(f));
         }
 
         modoSeleccionCambio = false;
@@ -259,24 +258,29 @@ public class Juego {
         }
     }
 
+
     public boolean terminarTurno(List<Casilla> casillasColocadasEsteTurno, Juez juez) {
         if (casillasColocadasEsteTurno.isEmpty()) {
             JOptionPane.showMessageDialog(null, "No has colocado ninguna ficha este turno.");
             return false;
         }
         
-        
+        // Validación de primera jugada modificada
         if (primeraJugada) {
             boolean centroOcupado = false;
+            
+            // Verificar si alguna de las fichas colocadas está en el centro
             for (Casilla casilla : casillasColocadasEsteTurno) {
                 if (casilla.getX() == CENTRO_FILA && casilla.getY() == CENTRO_COLUMNA) {
                     centroOcupado = true;
                     break;
                 }
             }
-            if (!centroOcupado) {
+            
+            // Si no hay fichas en el centro, verificar si el centro ya está ocupado (conexión)
+            if (!centroOcupado && tablero.obtenerCasilla(CENTRO_FILA, CENTRO_COLUMNA).getFicha() == null) {
                 JOptionPane.showMessageDialog(null, 
-                    "La primera jugada debe incluir la casilla central (" + 
+                    "La primera jugada debe incluir o conectar con la casilla central (" + 
                     CENTRO_FILA + "," + CENTRO_COLUMNA + ")");
                 return false;
             }
@@ -293,7 +297,6 @@ public class Juego {
         getJugadorActual().sumarPuntos(puntos);
         turnoTerminado = true;
         
-     
         if (primeraJugada) {
             primeraJugada = false;
         }
@@ -303,41 +306,51 @@ public class Juego {
     }
 
     private int calcularPuntos(List<String> palabras, List<Casilla> casillas) {
-        int total = 0;
-        for (String palabra : palabras) { 
-            int puntosPalabra = 0; 
-            int multiplicarPor = 1;
-            for (int i = 0; i < palabra.length() && i < casillas.size(); i++){
-                Casilla casilla = casillas.get(i);
-                Ficha actual = casilla.getFicha();
-                switch(casilla.getMultiplier()){
-                    case Casilla.DOUL:
-                        puntosPalabra += (2 * actual.getPuntos());
-                        casilla.disableMultiplier();
-                        break;
-                    case Casilla.TRIPL:
-                        puntosPalabra += (3 * actual.getPuntos());
-                        casilla.disableMultiplier();
-                        break;
-                    case Casilla.DOUP:
-                        multiplicarPor *= 2;
-                        casilla.disableMultiplier();
-                        break;
-                    case Casilla.TRIPP:
-                        multiplicarPor *= 3;
-                        casilla.disableMultiplier();
-                        break;
-                    default: 
-                        puntosPalabra += actual.getPuntos();
-                        break;
-                }
-            }
-            total += (puntosPalabra * multiplicarPor);
-            casillas = casillas.subList(palabra.length(), casillas.size());
+    int total = 0;
+    List<Casilla> casillasRestantes = new ArrayList<>(casillas); 
+    
+    for (String palabra : palabras) {
+        int puntosPalabra = 0;
+        int multiplicarPor = 1;
+        int letrasProcesadas = 0;
+        
+        for (int i = 0; i < palabra.length() && i < casillasRestantes.size(); i++) {
+            Casilla casilla = casillasRestantes.get(i);
+            Ficha actual = casilla.getFicha();
             
+            switch(casilla.getMultiplier()) {
+                case Casilla.DOUL:
+                    puntosPalabra += (2 * actual.getPuntos());
+                    casilla.disableMultiplier();
+                    break;
+                case Casilla.TRIPL:
+                    puntosPalabra += (3 * actual.getPuntos());
+                    casilla.disableMultiplier();
+                    break;
+                case Casilla.DOUP:
+                    multiplicarPor *= 2;
+                    casilla.disableMultiplier();
+                    break;
+                case Casilla.TRIPP:
+                    multiplicarPor *= 3;
+                    casilla.disableMultiplier();
+                    break;
+                default: 
+                    puntosPalabra += actual.getPuntos();
+                    break;
+            }
+            letrasProcesadas++;
         }
-        return total;
+        
+        total += (puntosPalabra * multiplicarPor);
+        
+
+        if (letrasProcesadas > 0) {
+            casillasRestantes = casillasRestantes.subList(letrasProcesadas, casillasRestantes.size());
+        }
     }
+    return total;
+}
 
     public void siguienteTurno() {
         while (getJugadorActual().getFichas().size() < 7 && monton.getCantidadFichas() > 0) {
@@ -355,42 +368,42 @@ public class Juego {
     }
 
     public void reiniciarJugada() {
-    getJugadorActual().getFichas().clear();
-    fichasColocadasEsteTurno.clear();
-    fichasSeleccionadasCambio.clear();
-    modoSeleccionCambio = false;
+        getJugadorActual().getFichas().clear();
+        fichasColocadasEsteTurno.clear();
+        fichasSeleccionadasCambio.clear();
+        modoSeleccionCambio = false;
 
-    for (int i = 0; i < Tablero.FILAS; i++) {
-        for (int j = 0; j < Tablero.COLUMNAS; j++) {
-            tablero.quitarFichaDeTablero(i, j);
-        }
-    }
-
-    for (int i = 0; i < Tablero.FILAS; i++) {
-        for (int j = 0; j < Tablero.COLUMNAS; j++) {
-            Casilla c = tableroCopiaInicioTurno[i][j];
-            tablero.cambiarCasilla(i, j, new Casilla(c));
-        }
-    }
-
-    for (Ficha f : fichasAtrilInicioTurno) {
-        getJugadorActual().agregarFicha(new Ficha(f));
-    }
-
-    boolean tableroVacio = true;
-    for (int i = 0; i < Tablero.FILAS; i++) {
-        for (int j = 0; j < Tablero.COLUMNAS; j++) {
-            if (tablero.obtenerCasilla(i, j).getFicha() != null) {
-                tableroVacio = false;
-                break;
+        for (int i = 0; i < Tablero.FILAS; i++) {
+            for (int j = 0; j < Tablero.COLUMNAS; j++) {
+                tablero.quitarFichaDeTablero(i, j);
             }
         }
-        if (!tableroVacio) break;
-    }
-    primeraJugada = tableroVacio;
 
-    fichaSeleccionada = null;
-}
+        for (int i = 0; i < Tablero.FILAS; i++) {
+            for (int j = 0; j < Tablero.COLUMNAS; j++) {
+                Casilla c = tableroCopiaInicioTurno[i][j];
+                tablero.cambiarCasilla(i, j, new Casilla(c));
+            }
+        }
+
+        for (Ficha f : fichasAtrilInicioTurno) {
+            getJugadorActual().agregarFicha(new Ficha(f));
+        }
+
+        boolean tableroVacio = true;
+        for (int i = 0; i < Tablero.FILAS; i++) {
+            for (int j = 0; j < Tablero.COLUMNAS; j++) {
+                if (tablero.obtenerCasilla(i, j).getFicha() != null) {
+                    tableroVacio = false;
+                    break;
+                }
+            }
+            if (!tableroVacio) break;
+        }
+        primeraJugada = tableroVacio;
+
+        fichaSeleccionada = null;
+    }
 
     public List<String> getPalabrasFormadasEsteTurno(Juez juez, Tablero tablero, List<Casilla> casillasColocadasEsteTurno) {
         List<String> palabrasValidas = new ArrayList<>();
