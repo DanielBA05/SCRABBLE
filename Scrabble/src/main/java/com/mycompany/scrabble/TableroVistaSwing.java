@@ -347,9 +347,7 @@ public class TableroVistaSwing extends JFrame {
             if (exito) {
                 JOptionPane.showMessageDialog(this, "Turno terminado correctamente.");
                 actualizarTodo();
-            } else {
-                JOptionPane.showMessageDialog(this, "Jugada inválida.");
-            }
+            } 
         });
 
         btnPasarTurno.addActionListener(e -> {

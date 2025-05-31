@@ -13,7 +13,7 @@ public class Ficha {
 
     // Constructor para comodín
     public Ficha() {
-        this.letra = ' ';
+        this.letra = '-';
         this.puntos = 0;
         this.esComodin = true;
     }
