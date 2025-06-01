@@ -7,6 +7,7 @@ import java.io.IOException;
 import java.util.HashSet;
 import java.util.Set;
 
+
 public class Juego {
     private List<Jugador> jugadores;
     private int jugadorActualIndex;
@@ -339,7 +340,7 @@ public class Juego {
     }
     return total;
 }
-
+    
     public void siguienteTurno() {
         while (getJugadorActual().getFichas().size() < 7 && monton.getCantidadFichas() > 0) {
             Ficha ficha = monton.robarFicha();
@@ -356,26 +357,31 @@ public class Juego {
     }
 
     public void reiniciarJugada() {
-        getJugadorActual().getFichas().clear();
-        fichasColocadasEsteTurno.clear();
-        fichasSeleccionadasCambio.clear();
-        modoSeleccionCambio = false;
+        Jugador jugadorActual = getJugadorActual();
+        List<Casilla> casillasAQuitar = new ArrayList<>(fichasColocadasEsteTurno); // Copia para iterar
+        fichasColocadasEsteTurno.clear(); // Limpiar la lista para el próximo intento
 
-        for (int i = 0; i < Tablero.FILAS; i++) {
-            for (int j = 0; j < Tablero.COLUMNAS; j++) {
-                tablero.quitarFichaDeTablero(i, j);
+        for (Casilla casillaColocada : casillasAQuitar) {
+            Ficha fichaEnCasilla = casillaColocada.getFicha();
+            if (fichaEnCasilla != null) {
+                casillaColocada.setFicha(null); // Quitar la ficha de la casilla
             }
         }
 
-        for (int i = 0; i < Tablero.FILAS; i++) {
-            for (int j = 0; j < Tablero.COLUMNAS; j++) {
-                Casilla c = tableroCopiaInicioTurno[i][j];
-                tablero.cambiarCasilla(i, j, new Casilla(c));
-            }
-        }
-
+        jugadorActual.getFichas().clear();
         for (Ficha f : fichasAtrilInicioTurno) {
-            getJugadorActual().agregarFicha(new Ficha(f));
+            jugadorActual.agregarFicha(new Ficha(f)); // Añadir copias para evitar referencias cruzadas
+        }
+
+        fichaSeleccionada = null;
+        modoSeleccionCambio = false;
+        fichasSeleccionadasCambio.clear();
+
+        for (int i = 0; i < Tablero.FILAS; i++) {
+            for (int j = 0; j < Tablero.COLUMNAS; j++) {
+                Casilla originalAlInicioTurno = tableroCopiaInicioTurno[i][j];
+                tablero.cambiarCasilla(i, j, new Casilla(originalAlInicioTurno));
+            }
         }
 
         boolean tableroVacio = true;
@@ -389,8 +395,6 @@ public class Juego {
             if (!tableroVacio) break;
         }
         primeraJugada = tableroVacio;
-
-        fichaSeleccionada = null;
     }
 
     public List<String> getPalabrasFormadasEsteTurno(Juez juez, Tablero tablero, List<Casilla> casillasColocadasEsteTurno) {

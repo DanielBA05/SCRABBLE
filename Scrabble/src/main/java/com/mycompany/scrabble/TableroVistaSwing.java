@@ -19,11 +19,15 @@ public class TableroVistaSwing extends JFrame {
     private JLabel jugadorActualLabel;
     private JPanel atrilPanel;
     private JTextArea jugadoresArea;
+    private JLabel fichasRestantesLabel; // Nuevo JLabel para las fichas restantes
 
     private JButton btnTerminarTurno;
     private JButton btnPasarTurno;
     private JButton btnCambiarFichas;
     private JButton btnReiniciarJugada;
+
+    // Contador para turnos consecutivos donde todos pasan
+    private final int[] contadorTurnosSeguidos = {0};
 
     public TableroVistaSwing(Juego juego) {
         this.juego = juego;
@@ -32,7 +36,7 @@ public class TableroVistaSwing extends JFrame {
         setTitle("Scrabble - Juego");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setMinimumSize(new Dimension(
-            TAM_CASILLA_BASE * Tablero.COLUMNAS + 350, // Aumentado para mejor visualización
+            TAM_CASILLA_BASE * Tablero.COLUMNAS + 350,
             TAM_CASILLA_BASE * Tablero.FILAS
         ));
         setLocationRelativeTo(null);
@@ -51,7 +55,7 @@ public class TableroVistaSwing extends JFrame {
         panelTablero = new JPanel(new GridLayout(Tablero.FILAS, Tablero.COLUMNAS));
         actualizarTablero();
 
-        // Panel izquierdo con datos y botones (más ancho para mejor visualización)
+        // Panel izquierdo con datos y botones
         panelIzquierdo = new JPanel();
         panelIzquierdo.setLayout(new BorderLayout());
         panelIzquierdo.setPreferredSize(new Dimension(350, 0));
@@ -67,7 +71,7 @@ public class TableroVistaSwing extends JFrame {
         jugadorActualLabel.setBorder(BorderFactory.createEmptyBorder(10, 0, 15, 0));
         panelArribaIzq.add(jugadorActualLabel, BorderLayout.NORTH);
 
-        // Configuración mejorada del atril
+        // Configuración del atril
         atrilPanel = new JPanel();
         atrilPanel.setLayout(new BoxLayout(atrilPanel, BoxLayout.X_AXIS));
         atrilPanel.setBorder(BorderFactory.createEmptyBorder(10, 5, 10, 5));
@@ -80,7 +84,7 @@ public class TableroVistaSwing extends JFrame {
 
         panelIzquierdo.add(panelArribaIzq, BorderLayout.NORTH);
 
-        // Centro: Botones con mejor espaciado
+        // Centro: Botones
         JPanel panelBotones = new JPanel(new GridLayout(4, 1, 5, 10));
         panelBotones.setBorder(BorderFactory.createEmptyBorder(10, 20, 20, 20));
 
@@ -89,7 +93,7 @@ public class TableroVistaSwing extends JFrame {
         btnCambiarFichas = new JButton("Cambiar Fichas");
         btnReiniciarJugada = new JButton("Reiniciar Jugada");
 
-        // Estilo consistente para los botones
+        // Estilo para los botones
         Font buttonFont = new Font("Arial", Font.BOLD, 14);
         btnTerminarTurno.setFont(buttonFont);
         btnPasarTurno.setFont(buttonFont);
@@ -103,15 +107,26 @@ public class TableroVistaSwing extends JFrame {
 
         panelIzquierdo.add(panelBotones, BorderLayout.CENTER);
 
-        // Abajo: Orden de jugadores con mejor formato
+        // Abajo: Información de jugadores y fichas restantes
+        JPanel panelInferiorIzq = new JPanel(new BorderLayout());
+        
         jugadoresArea = new JTextArea();
         jugadoresArea.setEditable(false);
         jugadoresArea.setFont(new Font("Arial", Font.PLAIN, 14));
         jugadoresArea.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
         
         JScrollPane scrollJugadores = new JScrollPane(jugadoresArea);
-        scrollJugadores.setPreferredSize(new Dimension(330, 180));
-        panelIzquierdo.add(scrollJugadores, BorderLayout.SOUTH);
+        scrollJugadores.setPreferredSize(new Dimension(330, 150)); // Altura ajustada
+        panelInferiorIzq.add(scrollJugadores, BorderLayout.CENTER);
+
+        // Nuevo JLabel para las fichas restantes
+        fichasRestantesLabel = new JLabel("Fichas en el mazo: ");
+        fichasRestantesLabel.setFont(new Font("Arial", Font.BOLD, 14));
+        fichasRestantesLabel.setHorizontalAlignment(SwingConstants.CENTER);
+        fichasRestantesLabel.setBorder(BorderFactory.createEmptyBorder(10, 0, 0, 0));
+        panelInferiorIzq.add(fichasRestantesLabel, BorderLayout.SOUTH);
+
+        panelIzquierdo.add(panelInferiorIzq, BorderLayout.SOUTH);
 
         // Agregar a frame
         add(panelIzquierdo, BorderLayout.WEST);
@@ -153,13 +168,13 @@ public class TableroVistaSwing extends JFrame {
     }
 
     private void ajustarTamanioAtril() {
-        int anchoDisponible = panelIzquierdo.getWidth() - 40; // Margen
+        int anchoDisponible = panelIzquierdo.getWidth() - 40;
         List<Ficha> fichas = juego.getFichasJugadorActual();
         int cantidadFichas = fichas.size();
         
         if (cantidadFichas > 0) {
             int anchoBoton = Math.min(80, anchoDisponible / Math.max(7, cantidadFichas));
-            anchoBoton = Math.max(50, anchoBoton); // Mínimo 50px
+            anchoBoton = Math.max(50, anchoBoton);
             
             for (Component comp : atrilPanel.getComponents()) {
                 if (comp instanceof JButton) {
@@ -177,13 +192,14 @@ public class TableroVistaSwing extends JFrame {
         actualizarAtril();
         actualizarTablero();
         actualizarOrdenJugadores();
+        actualizarFichasRestantes(); // Llamar al nuevo método para actualizar la etiqueta
     }
 
     private void actualizarJugadorActual() {
-    Jugador jugadorActual = juego.getJugadorActual();
-    jugadorActualLabel.setText("<html>Turno de: " + jugadorActual.getNombre() + 
-                             "<br>Puntos: " + jugadorActual.getPuntos() + "</html>");
-}
+        Jugador jugadorActual = juego.getJugadorActual();
+        jugadorActualLabel.setText("<html>Turno de: " + jugadorActual.getNombre() + 
+                                  "<br>Puntos: " + jugadorActual.getPuntos() + "</html>");
+    }
 
     private void actualizarAtril() {
         atrilPanel.removeAll();
@@ -194,14 +210,14 @@ public class TableroVistaSwing extends JFrame {
         final int ALTO_FICHA = 60;
 
         for (Ficha ficha : fichas) {
-    JButton btnFicha = new JButton("<html><div style='text-align: center;'>"
-        + ficha.getLetra() + "<br>"
-        + "<small>" + ficha.getPuntos() + "</small></div></html>");
-    
-    btnFicha.setPreferredSize(new Dimension(ANCHO_FICHA, ALTO_FICHA));
-    btnFicha.setMinimumSize(new Dimension(ANCHO_FICHA, ALTO_FICHA));
-    btnFicha.setMaximumSize(new Dimension(ANCHO_FICHA, ALTO_FICHA));
-    btnFicha.setFont(new Font("Arial", Font.BOLD, 24));
+            JButton btnFicha = new JButton("<html><div style='text-align: center;'>"
+                + ficha.getLetra() + "<br>"
+                + "<small>" + ficha.getPuntos() + "</small></div></html>");
+            
+            btnFicha.setPreferredSize(new Dimension(ANCHO_FICHA, ALTO_FICHA));
+            btnFicha.setMinimumSize(new Dimension(ANCHO_FICHA, ALTO_FICHA));
+            btnFicha.setMaximumSize(new Dimension(ANCHO_FICHA, ALTO_FICHA));
+            btnFicha.setFont(new Font("Arial", Font.BOLD, 24));
 
             // Estilo visual
             btnFicha.setMargin(new Insets(5, 5, 5, 5));
@@ -245,14 +261,6 @@ public class TableroVistaSwing extends JFrame {
 
         atrilPanel.revalidate();
         atrilPanel.repaint();
-    }
-    
-    private int calcularAnchoFichaAtril(int cantidadFichas) {
-        // Lógica para calcular el ancho basado en la cantidad de fichas
-        if (cantidadFichas <= 3) return 80;
-        if (cantidadFichas <= 5) return 70;
-        if (cantidadFichas <= 7) return 60;
-        return 50; // Para más de 7 fichas
     }
 
     private void actualizarTablero() {
@@ -341,27 +349,53 @@ public class TableroVistaSwing extends JFrame {
         jugadoresArea.setText(sb.toString());
     }
     
+    // Nuevo método para actualizar la etiqueta de fichas restantes
+    private void actualizarFichasRestantes() {
+        fichasRestantesLabel.setText("Fichas en el mazo: " + juego.getMonton());
+    }
+
     private void agregarEventosBotones() {
         btnTerminarTurno.addActionListener(e -> {
             boolean exito = juego.terminarTurno(juego.getFichasColocadasEsteTurno(), juego.juez);
             if (exito) {
-                JOptionPane.showMessageDialog(this, "Turno terminado correctamente.");
-                actualizarTodo();
-            } 
+                contadorTurnosSeguidos[0] = 0; // Reiniciar contador al terminar turno correctamente
+                
+                // Verificar si el jugador actual se quedó sin fichas Y no hay más en el montón
+                if (juego.getMonton() == 0 && juego.getJugadorActual().getFichas().isEmpty()) {
+                    mostrarTablaClasificacion(true);
+                } else {
+                    actualizarTodo();
+                }
+            } else {
+                // Si terminar el turno no fue exitoso (palabra inválida, etc.)
+                JOptionPane.showMessageDialog(this, "La palabra no es válida o no cumple las reglas del Scrabble.", "Error al Terminar Turno", JOptionPane.ERROR_MESSAGE);
+            }
         });
 
         btnPasarTurno.addActionListener(e -> {
+            contadorTurnosSeguidos[0]++; // Incrementar contador de turnos pasados
             juego.reiniciarJugada();
             actualizarTodo();
             juego.siguienteTurno();
             actualizarTodo();
+            
+            // Si todos los jugadores pasaron consecutivamente
+            if (contadorTurnosSeguidos[0] >= juego.getJugadores().size()) {
+                mostrarTablaClasificacion(false);
+                contadorTurnosSeguidos[0] = 0; // Reiniciar contador
+            }
         });
 
         btnCambiarFichas.addActionListener(e -> {
-            juego.cambiarFicha();
+            // Si se empieza a cambiar fichas, reiniciar contador de turnos pasados
+            if (!juego.isModoSeleccionCambio()) {
+                contadorTurnosSeguidos[0] = 0;
+            }
+            
+            juego.cambiarFicha(); // Este método probablemente maneja la lógica para cambiar al modo de selección y luego confirmar
             actualizarTodo();
 
-            // Actualizar el texto del botón según el modo
+            // Actualizar texto del botón según el modo
             if (juego.isModoSeleccionCambio()) {
                 btnCambiarFichas.setText("Confirmar Cambio");
                 btnTerminarTurno.setEnabled(false);
@@ -379,5 +413,73 @@ public class TableroVistaSwing extends JFrame {
             juego.reiniciarJugada();
             actualizarTodo();
         });
+    }
+
+    private void mostrarTablaClasificacion(boolean jugadorTerminoSinFichas) {
+        List<Jugador> jugadores = juego.getJugadores();
+        
+        if (jugadorTerminoSinFichas) {
+            // Caso: Jugador terminó sin fichas
+            Jugador ganador = juego.getJugadorActual();
+            int sumaRestante = 0;
+            
+            // Restar puntos de las fichas restantes de los oponentes y sumarlos al ganador
+            for (Jugador j : jugadores) {
+                if (j != ganador) {
+                    int puntosFichas = calcularPuntosFichas(j.getFichas());
+                    j.sumarPuntos(-puntosFichas);
+                    sumaRestante += puntosFichas;
+                }
+            }
+            
+            ganador.sumarPuntos(sumaRestante);
+        } else {
+            // Caso: Todos pasaron consecutivamente
+            for (Jugador j : jugadores) {
+                int puntosFichas = calcularPuntosFichas(j.getFichas());
+                j.sumarPuntos(-puntosFichas);
+            }
+        }
+        
+        // Ordenar jugadores por puntos (de mayor a menor)
+        jugadores.sort((j1, j2) -> Integer.compare(j2.getPuntos(), j1.getPuntos()));
+        
+        // Construir tabla HTML
+        StringBuilder sb = new StringBuilder("<html><h2>Partida Terminada</h2>");
+        sb.append("<table border='1' cellpadding='5' style='margin: 10px;'>");
+        sb.append("<tr><th>Posición</th><th>Jugador</th><th>Puntos</th></tr>");
+        
+        for (int i = 0; i < jugadores.size(); i++) {
+            Jugador j = jugadores.get(i);
+            sb.append("<tr><td>").append(i + 1).append("</td>")
+              .append("<td>").append(j.getNombre()).append("</td>")
+              .append("<td>").append(j.getPuntos()).append("</td></tr>");
+        }
+        
+        sb.append("</table>");
+        
+        // Mensaje adicional según cómo terminó la partida
+        if (jugadorTerminoSinFichas) {
+            sb.append("<p>¡").append(jugadores.get(0).getNombre())
+              .append(" ha ganado al colocar todas sus fichas!</p>");
+        } else {
+            sb.append("<p>La partida ha terminado porque todos los jugadores pasaron consecutivamente.</p>");
+        }
+        
+        sb.append("</html>");
+        
+        // Mostrar diálogo con los resultados
+        JOptionPane.showMessageDialog(this, sb.toString(), "Resultado Final", 
+                                      JOptionPane.INFORMATION_MESSAGE);
+        
+        // Deshabilitar botones al terminar la partida
+        btnTerminarTurno.setEnabled(false);
+        btnPasarTurno.setEnabled(false);
+        btnCambiarFichas.setEnabled(false);
+        btnReiniciarJugada.setEnabled(false);
+    }
+
+    private int calcularPuntosFichas(List<Ficha> fichas) {
+        return fichas.stream().mapToInt(Ficha::getPuntos).sum();
     }
 }

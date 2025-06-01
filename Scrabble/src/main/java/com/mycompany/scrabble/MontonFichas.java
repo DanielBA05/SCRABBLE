@@ -25,39 +25,46 @@ public class MontonFichas {
                                     'Z'};
     
     public MontonFichas() {
-        fichas = new ArrayList<>();
-        inicializarFichas();
-    }
+    fichas = new ArrayList<>();
+    inicializarFichas();
+    System.out.println("MontonFichas: Fichas iniciales en el mazo: " + fichas.size()); // DEBERÍA SER 100
+}
     
     
     private void inicializarFichas(){
-        for (int i = 0; i < 26; i++){ 
-            for (int j = 1; j <= cantidades[i]; j++){
-                if ((i >= 0) && (i <= 9)){
-                    fichas.add(new Ficha(letras[i], 1));
-                } else if (i == 10 || i == 11){
-                    fichas.add(new Ficha(letras[i], 2));
-                } else if (i >= 12 && i <= 15){
-                    fichas.add(new Ficha(letras[i], 3));
-                } else if (i >= 16 && i <= 19){
-                    fichas.add(new Ficha(letras[i], 4));
-                } else if (i == 20){
-                    fichas.add(new Ficha(letras[i], 5));
-                } else if (i >= 21 && i <= 25){
-                    fichas.add(new Ficha(letras[i], 8));
-                } else {
-                    fichas.add(new Ficha(letras[i], 10));
+        for (int i = 0; i < letras.length; i++){
+            for (int j = 0; j < cantidades[i]; j++){
+                int puntaje;
+
+                if (i <= 9) { // A, E, O, I, S, N, L, R, U, T
+                    puntaje = 1;
+                } else if (i <= 11) { // D, G
+                    puntaje = 2;
+                } else if (i <= 15) { // C, B, M, P
+                    puntaje = 3;
+                } else if (i <= 19) { // H, F, V, Y
+                    puntaje = 4;
+                } else if (i == 20) { // Q
+                    puntaje = 5;
+                } else if (i <= 25) { // J, K, Ñ, W, X
+                    puntaje = 8;
+                } else { // Z
+                    puntaje = 10;
                 }
+
+                fichas.add(new Ficha(letras[i], puntaje));
             }
         }
 
-        // Agregar los dos comodines correctamente
-        fichas.add(new Ficha()); // Comodín 1
-        fichas.add(new Ficha()); // Comodín 2
+        // Agregar comodines
+        fichas.add(new Ficha());
+        fichas.add(new Ficha());
 
         Collections.shuffle(fichas);
     }
 
+    
+   
     public Ficha robarFicha(){
         if (fichas.isEmpty()){ 
             return null; //si no existen más fichas, no hay nada que pueda robar
