@@ -366,9 +366,6 @@ public class TableroVistaSwing extends JFrame {
                 } else {
                     actualizarTodo();
                 }
-            } else {
-                // Si terminar el turno no fue exitoso (palabra inválida, etc.)
-                JOptionPane.showMessageDialog(this, "La palabra no es válida o no cumple las reglas del Scrabble.", "Error al Terminar Turno", JOptionPane.ERROR_MESSAGE);
             }
         });
 
