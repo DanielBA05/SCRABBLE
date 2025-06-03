@@ -278,7 +278,6 @@ public class Juego {
         List<String> palabras = getPalabrasFormadasEsteTurno(juez, tablero, casillasColocadasEsteTurno);
 
         if (palabras.isEmpty()) {
-            JOptionPane.showMessageDialog(null, "Jugada inválida: no se formaron palabras válidas.");
             return false;
         }
 
