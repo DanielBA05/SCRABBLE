@@ -4,11 +4,13 @@ public class Ficha {
     private char letra;
     private int puntos;
     private boolean esComodin;
+    private Casilla lugar;
 
     public Ficha(char letra, int puntos) {
         this.letra = letra;
         this.puntos = puntos;
         this.esComodin = false;
+        this.lugar = null;
     }
 
     // Constructor para comodín
@@ -16,6 +18,7 @@ public class Ficha {
         this.letra = '-';
         this.puntos = 0;
         this.esComodin = true;
+        this.lugar = null;
     }
 
     // Constructor copia
@@ -23,6 +26,7 @@ public class Ficha {
         this.letra = original.letra;
         this.puntos = original.puntos;
         this.esComodin = original.esComodin;
+        this.lugar = original.lugar;
     }
 
     public char getLetra() {
@@ -47,5 +51,13 @@ public class Ficha {
 
     public void setEsComodin(boolean esComodin) {
         this.esComodin = esComodin;
+    }
+    
+    public void setLugar(Casilla casilla){
+        this.lugar = casilla;
+    }
+    
+    public Casilla getLugar(){
+        return this.lugar;
     }
 }
