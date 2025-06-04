@@ -233,12 +233,14 @@ public class Juego {
             comodinConLetra.setPuntos(0);
 
             casilla.setFicha(comodinConLetra);
+            comodinConLetra.setLugar(casilla);
             getJugadorActual().removerFicha(ficha);
         } else {
             casilla.setFicha(ficha);
+            ficha.setLugar(casilla);
             getJugadorActual().removerFicha(ficha);
         }
-
+        
         fichasColocadasEsteTurno.add(casilla);
         return true;
     } else {
@@ -249,63 +251,98 @@ public class Juego {
 
 
     public boolean terminarTurno(List<Casilla> casillasColocadasEsteTurno, Juez juez) {
-        if (casillasColocadasEsteTurno.isEmpty()) {
-            JOptionPane.showMessageDialog(null, "No has colocado ninguna ficha este turno.");
-            return false;
-        }
-        
-        // Validación de primera jugada modificada
-        if (primeraJugada) {
-            boolean centroOcupado = false;
-            
-            // Verificar si alguna de las fichas colocadas está en el centro
-            for (Casilla casilla : casillasColocadasEsteTurno) {
-                if (casilla.getX() == CENTRO_FILA && casilla.getY() == CENTRO_COLUMNA) {
-                    centroOcupado = true;
-                    break;
-                }
-            }
-            
-            // Si no hay fichas en el centro, verificar si el centro ya está ocupado (conexión)
-            if (!centroOcupado && tablero.obtenerCasilla(CENTRO_FILA, CENTRO_COLUMNA).getFicha() == null) {
-                JOptionPane.showMessageDialog(null, 
-                    "La primera jugada debe incluir o conectar con la casilla central (" + 
-                    CENTRO_FILA + "," + CENTRO_COLUMNA + ")");
-                return false;
+    if (casillasColocadasEsteTurno.isEmpty()) {
+        JOptionPane.showMessageDialog(null, "No has colocado ninguna ficha este turno.");
+        return false;
+    }
+    
+    
+    if (primeraJugada) {
+        boolean centroOcupado = false;
+        for (Casilla casilla : casillasColocadasEsteTurno) {
+            if (casilla.getX() == CENTRO_FILA && casilla.getY() == CENTRO_COLUMNA) {
+                centroOcupado = true;
+                break;
             }
         }
         
-        List<String> palabras = getPalabrasFormadasEsteTurno(juez, tablero, casillasColocadasEsteTurno);
-
-        if (palabras.isEmpty()) {
+        if (!centroOcupado && tablero.obtenerCasilla(CENTRO_FILA, CENTRO_COLUMNA).getFicha() == null) {
+            JOptionPane.showMessageDialog(null, 
+                "La primera jugada debe incluir la casilla central (" + 
+                CENTRO_FILA + "," + CENTRO_COLUMNA + ")");
             return false;
         }
-
-        int puntos = calcularPuntos(palabras, casillasColocadasEsteTurno);
-        getJugadorActual().sumarPuntos(puntos);
-        turnoTerminado = true;
-        
-        if (primeraJugada) {
-            primeraJugada = false;
+    } 
+    
+    else {
+        boolean conectada = false;
+        for (Casilla casilla : casillasColocadasEsteTurno) {
+            
+            int x = casilla.getX();
+            int y = casilla.getY();
+            
+            // validamos para cada casilla adyacente, o se aarriba, abajo, izquierda y derecha
+            if (x > 0 && tablero.obtenerCasilla(x-1, y).getFicha() != null && 
+                !casillasColocadasEsteTurno.contains(tablero.obtenerCasilla(x-1, y))) {
+                conectada = true;
+                break;
+            }
+           
+            if (x < tablero.FILAS-1 && tablero.obtenerCasilla(x+1, y).getFicha() != null && 
+                !casillasColocadasEsteTurno.contains(tablero.obtenerCasilla(x+1, y))) {
+                conectada = true;
+                break;
+            }
+           
+            if (y > 0 && tablero.obtenerCasilla(x, y-1).getFicha() != null && 
+                !casillasColocadasEsteTurno.contains(tablero.obtenerCasilla(x, y-1))) {
+                conectada = true;
+                break;
+            }
+            
+            if (y < tablero.COLUMNAS && tablero.obtenerCasilla(x, y+1).getFicha() != null && 
+                !casillasColocadasEsteTurno.contains(tablero.obtenerCasilla(x, y+1))) {
+                conectada = true;
+                break;
+            }
         }
         
-        siguienteTurno();
-        return true;
+        if (!conectada) {
+            JOptionPane.showMessageDialog(null, 
+                "Las fichas colocadas deben conectarse con al menos una ficha existente en el tablero.");
+            return false;
+        }
     }
 
-    private int calcularPuntos(List<String> palabras, List<Casilla> casillas) {
+    // validamos con el judge, calculamos los puntos, actualizamos y pasamos turno
+    List<List<Ficha>> palabrasFormadas = getPalabrasFormadasEsteTurno(juez, tablero, casillasColocadasEsteTurno);
+    if (palabrasFormadas.isEmpty()) {
+        JOptionPane.showMessageDialog(null, "No se formaron palabras válidas.");
+        return false;
+    }
+
+    int puntos = calcularPuntos(palabrasFormadas, casillasColocadasEsteTurno);
+    getJugadorActual().sumarPuntos(puntos);
+
+    primeraJugada = false;
+    turnoTerminado = true;
+    siguienteTurno();
+    return true;
+}
+
+    private int calcularPuntos(List<List<Ficha>> palabras, List<Casilla> casillas) {
     int total = 0;
-    List<Casilla> casillasRestantes = new ArrayList<>(casillas); 
-    
-    for (String palabra : palabras) {
+        System.out.println(palabras.size());
+    for (List<Ficha> palabra : palabras) {
         int puntosPalabra = 0;
         int multiplicarPor = 1;
-        int letrasProcesadas = 0;
+        System.out.println("LENGTH DE LA PALABRA: " + palabra.size());
         
-        for (int i = 0; i < palabra.length() && i < casillasRestantes.size(); i++) {
-            Casilla casilla = casillasRestantes.get(i);
-            Ficha actual = casilla.getFicha();
-            
+        for (int i = 0; i < palabra.size(); i++) {
+            Casilla casilla = palabra.get(i).getLugar();
+            System.out.println(casilla);
+            Ficha actual = palabra.get(i);
+
             switch(casilla.getMultiplier()) {
                 case Casilla.DOUL:
                     puntosPalabra += (2 * actual.getPuntos());
@@ -316,10 +353,12 @@ public class Juego {
                     casilla.disableMultiplier();
                     break;
                 case Casilla.DOUP:
+                    puntosPalabra += actual.getPuntos();
                     multiplicarPor *= 2;
                     casilla.disableMultiplier();
                     break;
                 case Casilla.TRIPP:
+                    puntosPalabra += actual.getPuntos();
                     multiplicarPor *= 3;
                     casilla.disableMultiplier();
                     break;
@@ -327,15 +366,11 @@ public class Juego {
                     puntosPalabra += actual.getPuntos();
                     break;
             }
-            letrasProcesadas++;
+            System.out.println(puntosPalabra);
         }
         
         total += (puntosPalabra * multiplicarPor);
         
-
-        if (letrasProcesadas > 0) {
-            casillasRestantes = casillasRestantes.subList(letrasProcesadas, casillasRestantes.size());
-        }
     }
     return total;
 }
@@ -396,10 +431,12 @@ public class Juego {
         primeraJugada = tableroVacio;
     }
 
-    public List<String> getPalabrasFormadasEsteTurno(Juez juez, Tablero tablero, List<Casilla> casillasColocadasEsteTurno) {
+    public List<List<Ficha>> getPalabrasFormadasEsteTurno(Juez juez, Tablero tablero, List<Casilla> casillasColocadasEsteTurno) {
+        List<List<Ficha>> palabrasEnFichas = new ArrayList<>();
+        List<List<Ficha>> palabrasEnFichasValidas = new ArrayList<>();
         List<String> palabrasValidas = new ArrayList<>();
         if (casillasColocadasEsteTurno.isEmpty()) {
-            return palabrasValidas;
+            return new ArrayList<>();
         }
 
         boolean esHorizontal = true;
@@ -430,6 +467,7 @@ public class Juego {
             int maxCol = casillasColocadasEsteTurno.stream().mapToInt(c -> c.getY()).max().orElse(colInicial);
 
             StringBuilder palabraHoriz = new StringBuilder();
+            List<Ficha> nuevaPalabra = new ArrayList<>();
             int currentCol = minCol;
             while (currentCol >= 0 && tablero.obtenerFicha(filaInicial, currentCol) != null) {
                 currentCol--;
@@ -438,15 +476,18 @@ public class Juego {
 
             while (currentCol < Tablero.COLUMNAS && tablero.obtenerFicha(filaInicial, currentCol) != null) {
                 palabraHoriz.append(tablero.obtenerFicha(filaInicial, currentCol).getLetra());
+                nuevaPalabra.add(tablero.obtenerFicha(filaInicial, currentCol));
                 currentCol++;
             }
 
             if (palabraHoriz.length() >= 2) {
                 palabrasEncontradas.add(palabraHoriz.toString());
+                palabrasEnFichas.add(new ArrayList<>(nuevaPalabra));
             }
-
+            nuevaPalabra.clear();
             for (Casilla c : casillasColocadasEsteTurno) {
                 StringBuilder palabraVert = new StringBuilder();
+                
                 int currentRow = c.getX();
                 int currentColVert = c.getY();
 
@@ -458,17 +499,21 @@ public class Juego {
 
                 while (r < Tablero.FILAS && tablero.obtenerFicha(r, currentColVert) != null) {
                     palabraVert.append(tablero.obtenerFicha(r, currentColVert).getLetra());
+                    nuevaPalabra.add(tablero.obtenerFicha(r, currentColVert));
                     r++;
                 }
                 if (palabraVert.length() >= 2) {
                     palabrasEncontradas.add(palabraVert.toString());
+                    palabrasEnFichas.add(new ArrayList<>(nuevaPalabra));
                 }
+                nuevaPalabra.clear();
             }
         } else if (esVertical) {
             int minFila = casillasColocadasEsteTurno.stream().mapToInt(c -> c.getX()).min().orElse(filaInicial);
             int maxFila = casillasColocadasEsteTurno.stream().mapToInt(c -> c.getX()).max().orElse(filaInicial);
 
             StringBuilder palabraVert = new StringBuilder();
+            List<Ficha> nuevaPalabra = new ArrayList<>();
             int currentRow = minFila;
             while (currentRow >= 0 && tablero.obtenerFicha(currentRow, colInicial) != null) {
                 currentRow--;
@@ -477,11 +522,14 @@ public class Juego {
 
             while (currentRow < Tablero.FILAS && tablero.obtenerFicha(currentRow, colInicial) != null) {
                 palabraVert.append(tablero.obtenerFicha(currentRow, colInicial).getLetra());
+                nuevaPalabra.add(tablero.obtenerFicha(currentRow, colInicial));
                 currentRow++;
             }
             if (palabraVert.length() >= 2) {
                 palabrasEncontradas.add(palabraVert.toString());
+                palabrasEnFichas.add(new ArrayList<>(nuevaPalabra));
             }
+            nuevaPalabra.clear();
 
             for (Casilla c : casillasColocadasEsteTurno) {
                 StringBuilder palabraHoriz = new StringBuilder();
@@ -496,23 +544,28 @@ public class Juego {
 
                 while (col < Tablero.COLUMNAS && tablero.obtenerFicha(currentRowHoriz, col) != null) {
                     palabraHoriz.append(tablero.obtenerFicha(currentRowHoriz, col).getLetra());
+                    nuevaPalabra.add(tablero.obtenerFicha(currentRowHoriz, col));
                     col++;
                 }
                 if (palabraHoriz.length() >= 2) {
                     palabrasEncontradas.add(palabraHoriz.toString());
+                    palabrasEnFichas.add(new ArrayList<>(nuevaPalabra));
                 }
+                nuevaPalabra.clear();
             }
         }
-
+        int c = 0;
         for (String p : palabrasEncontradas) {
             if (juez.esValida(p)) {
+                palabrasEnFichasValidas.add(palabrasEnFichas.get(c));
                 palabrasValidas.add(p);
             } else {
                 JOptionPane.showMessageDialog(null, "La palabra '" + p + "' no es válida en el diccionario.");
                 return new ArrayList<>();
             }
+            c++;
         }
 
-        return palabrasValidas;
+        return palabrasEnFichasValidas;
     }
 }
