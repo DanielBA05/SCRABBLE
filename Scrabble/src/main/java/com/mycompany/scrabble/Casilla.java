@@ -26,12 +26,12 @@ public class Casilla {
         this.x = original.x;
         this.y = original.y;
         this.multiplier = original.multiplier;
-        this.ficha = original.ficha != null ? new Ficha(original.ficha) : null;
+        this.ficha = original.ficha != null ? new Ficha(original.ficha) : null; //para evitar errores
     }
     
     public void quitarFicha() {
-    this.ficha = null;
-}
+    this.ficha = null; //seteamos al ficha a null para macar la casilla como vacía
+}   //métodos set y get para la casilla, la ficha dentro de la casilla y el multiplicador
     public int getX() {
         return x; 
     }
@@ -46,7 +46,7 @@ public class Casilla {
     }
     public int getMultiplier() {
         return multiplier;
-    }
+    } // para desactivar el multiplicador
     public void disableMultiplier(){
         this.multiplier = 0;
     }
