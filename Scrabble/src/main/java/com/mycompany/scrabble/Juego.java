@@ -52,9 +52,16 @@ public class Juego {
     public List<Jugador> getJugadores() {
         return new ArrayList<>(jugadores);
     }
-
+    
     public Jugador getJugadorActual() {
         return jugadores.get(jugadorActualIndex);
+    }
+    
+    public Jugador getJugadorPasado(){
+        if (jugadorActualIndex==0){
+            return jugadores.get(jugadores.size()-1);
+        }
+        return jugadores.get(jugadorActualIndex-1);
     }
 
     public List<Ficha> getFichasJugadorActual() {
