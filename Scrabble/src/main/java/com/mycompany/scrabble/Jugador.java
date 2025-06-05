@@ -31,6 +31,10 @@ public class Jugador {
     public List<Ficha> getFichas() {
         return fichas;
     }
+    
+    public int getCantFichas(){
+        return fichas.size();
+    }
 
     // Elimina todas las fichas del jugador (reinicio)
     public void resetFichas() {
