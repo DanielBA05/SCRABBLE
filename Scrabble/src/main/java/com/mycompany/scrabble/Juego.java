@@ -256,14 +256,14 @@ public class Juego {
     }
 }
 
-
+    // esta función se encarga de filtrar las jugadas validas, sólo se puede usar si hay una jugada válida, en caso contrario no deja avanzar el turno
     public boolean terminarTurno(List<Casilla> casillasColocadasEsteTurno, Juez juez) {
     if (casillasColocadasEsteTurno.isEmpty()) {
         JOptionPane.showMessageDialog(null, "No has colocado ninguna ficha este turno.");
         return false;
     }
     
-    
+    //primero se filtra si es o no es la primera jugada de la partida, revisando el estado del centro, si hay ficha, no es, si está vacío, (null) sí es, en cuyo caso es necesario hacer la jugada inicial correctamente para avanzar
     if (primeraJugada) {
         boolean centroOcupado = false;
         for (Casilla casilla : casillasColocadasEsteTurno) {
@@ -280,7 +280,7 @@ public class Juego {
             return false;
         }
     } 
-    
+    //en caso de no ser la jugada inicial, revisa el estado del tablero en comparación de las casillascolocadasesteturno, si hay alguna ficha anexa(izquierda, derecha, arriba, abajo) lo toma como válido, caso contrario invalida la palabra
     else {
         boolean conectada = false;
         for (Casilla casilla : casillasColocadasEsteTurno) {
@@ -336,13 +336,13 @@ public class Juego {
     siguienteTurno();
     return true;
 }
-
+    //método para calcular los puntos y añadirlos al total de puntos del jugador
     private int calcularPuntos(List<List<Ficha>> palabras, List<Casilla> casillas) {
     int total = 0;
         System.out.println(palabras.size());
     for (List<Ficha> palabra : palabras) {
-        int puntosPalabra = 0;
-        int multiplicarPor = 1;
+        int puntosPalabra = 0; //aqui vamos sumando la puntuación de la palabra
+        int multiplicarPor = 1; //aqui vamos acumulando multiplicadores que sean de palabra entera y no de letra
         System.out.println("LENGTH DE LA PALABRA: " + palabra.size());
         
         for (int i = 0; i < palabra.size(); i++) {
@@ -367,7 +367,7 @@ public class Juego {
                 case Casilla.TRIPP:
                     puntosPalabra += actual.getPuntos();
                     multiplicarPor *= 3;
-                    casilla.disableMultiplier();
+                    casilla.disableMultiplier(); //se desactivan para evitar reuso
                     break;
                 default: 
                     puntosPalabra += actual.getPuntos();
@@ -376,12 +376,12 @@ public class Juego {
             System.out.println(puntosPalabra);
         }
         
-        total += (puntosPalabra * multiplicarPor);
+        total += (puntosPalabra * multiplicarPor); //multiplicamos el total de multiplicador palabra por el total de la palabra
         
     }
     return total;
 }
-    
+    //rellenamos el atril, vamos al turno del siguiente jugador y reiniciamos el juego en caso de jugadas que se hayan quedado a medias
     public void siguienteTurno() {
         while (getJugadorActual().getFichas().size() < 7 && monton.getCantidadFichas() > 0) {
             Ficha ficha = monton.robarFicha();
@@ -437,7 +437,7 @@ public class Juego {
         }
         primeraJugada = tableroVacio;
     }
-
+    //este método recibe al propio juez, el tablero para revisar las posiciones de las fichas, y las fichas en sí, para formarlas como palabras, enviarselas al juez, y luego devoler la palabra en forma de fichas
     public List<List<Ficha>> getPalabrasFormadasEsteTurno(Juez juez, Tablero tablero, List<Casilla> casillasColocadasEsteTurno) {
         List<List<Ficha>> palabrasEnFichas = new ArrayList<>();
         List<List<Ficha>> palabrasEnFichasValidas = new ArrayList<>();
@@ -445,12 +445,12 @@ public class Juego {
         if (casillasColocadasEsteTurno.isEmpty()) {
             return new ArrayList<>();
         }
-
+         
         boolean esHorizontal = true;
         boolean esVertical = true;
         int filaInicial = casillasColocadasEsteTurno.get(0).getX();
         int colInicial = casillasColocadasEsteTurno.get(0).getY();
-
+        //verificamos que no sea diagonal
         if (casillasColocadasEsteTurno.size() > 1) {
             for (int i = 1; i < casillasColocadasEsteTurno.size(); i++) {
                 if (casillasColocadasEsteTurno.get(i).getX() != filaInicial) {
@@ -468,7 +468,7 @@ public class Juego {
         }
 
         Set<String> palabrasEncontradas = new HashSet<>();
-
+        //formamos la palabra en caso de ser horizontal
         if (esHorizontal) {
             int minCol = casillasColocadasEsteTurno.stream().mapToInt(c -> c.getY()).min().orElse(colInicial);
             int maxCol = casillasColocadasEsteTurno.stream().mapToInt(c -> c.getY()).max().orElse(colInicial);
@@ -515,7 +515,7 @@ public class Juego {
                 }
                 nuevaPalabra.clear();
             }
-        } else if (esVertical) {
+        } else if (esVertical) { //formamos la palabra en caso de ser vertical
             int minFila = casillasColocadasEsteTurno.stream().mapToInt(c -> c.getX()).min().orElse(filaInicial);
             int maxFila = casillasColocadasEsteTurno.stream().mapToInt(c -> c.getX()).max().orElse(filaInicial);
 
@@ -563,9 +563,9 @@ public class Juego {
         }
         int c = 0;
         for (String p : palabrasEncontradas) {
-            if (juez.esValida(p)) {
+            if (juez.esValida(p)) { //pasamos el array de palabras al juez para saber si están en el diccionario
                 palabrasEnFichasValidas.add(palabrasEnFichas.get(c));
-                palabrasValidas.add(p);
+                palabrasValidas.add(p); //las añadimos
             } else {
                 JOptionPane.showMessageDialog(null, "La palabra '" + p + "' no es válida en el diccionario.");
                 return new ArrayList<>();
@@ -573,6 +573,6 @@ public class Juego {
             c++;
         }
 
-        return palabrasEnFichasValidas;
+        return palabrasEnFichasValidas; //retornamos las palabras encontradas
     }
 }
