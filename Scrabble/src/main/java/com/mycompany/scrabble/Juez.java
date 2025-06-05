@@ -8,7 +8,7 @@ import java.util.Set;
 
 public class Juez {
     private Set<String> diccionario;
-
+    //Constructor que carga el diccionario desde un archivo de recursos
     public Juez() {
         diccionario = new HashSet<>();
         try {
@@ -20,11 +20,11 @@ public class Juez {
             BufferedReader br = new BufferedReader(new InputStreamReader(is));
             String linea;
             while ((linea = br.readLine()) != null) {
-                diccionario.add(linea.trim().toLowerCase());
+                diccionario.add(linea.trim().toLowerCase()); // Manejo de errores para detectar problemas en la carga del archivo.
             }
             br.close();
         } catch (Exception e) {
-            e.printStackTrace();
+            e.printStackTrace(); // Manejo de errores para detectar problemas en la carga del archivo.
         }
     }
 
