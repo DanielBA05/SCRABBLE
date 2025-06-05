@@ -27,7 +27,7 @@ public class TableroVistaSwing extends JFrame {
     private JButton btnReiniciarJugada;
 
     // Contador para turnos consecutivos donde todos pasan
-    private final int[] contadorTurnosSeguidos = {0};
+    private int contadorTurnosSeguidos = 0;
 
     public TableroVistaSwing(Juego juego) {
         this.juego = juego;
@@ -165,26 +165,6 @@ public class TableroVistaSwing extends JFrame {
         panelContenedorTablero.repaint();
 
         actualizarTablero();
-    }
-
-    private void ajustarTamanioAtril() {
-        int anchoDisponible = panelIzquierdo.getWidth() - 40;
-        List<Ficha> fichas = juego.getFichasJugadorActual();
-        int cantidadFichas = fichas.size();
-        
-        if (cantidadFichas > 0) {
-            int anchoBoton = Math.min(80, anchoDisponible / Math.max(7, cantidadFichas));
-            anchoBoton = Math.max(50, anchoBoton);
-            
-            for (Component comp : atrilPanel.getComponents()) {
-                if (comp instanceof JButton) {
-                    comp.setPreferredSize(new Dimension(anchoBoton, 60));
-                }
-            }
-            
-            atrilPanel.revalidate();
-            atrilPanel.repaint();
-        }
     }
 
     private void actualizarTodo() {
@@ -358,10 +338,10 @@ public class TableroVistaSwing extends JFrame {
         btnTerminarTurno.addActionListener(e -> {
             boolean exito = juego.terminarTurno(juego.getFichasColocadasEsteTurno(), juego.juez);
             if (exito) {
-                contadorTurnosSeguidos[0] = 0; // Reiniciar contador al terminar turno correctamente
+                contadorTurnosSeguidos = 0; // Reiniciar contador al terminar turno correctamente
                 
                 // Verificar si el jugador actual se quedó sin fichas Y no hay más en el montón
-                if (juego.getMonton() == 0 && juego.getJugadorActual().getFichas().isEmpty()) {
+                if (juego.getMonton() <= 0 && juego.getJugadorPasado().getCantFichas()==0) {
                     mostrarTablaClasificacion(true);
                 } else {
                     actualizarTodo();
@@ -370,23 +350,23 @@ public class TableroVistaSwing extends JFrame {
         });
 
         btnPasarTurno.addActionListener(e -> {
-            contadorTurnosSeguidos[0]++; // Incrementar contador de turnos pasados
+            contadorTurnosSeguidos++; // Incrementar contador de turnos pasados
             juego.reiniciarJugada();
             actualizarTodo();
             juego.siguienteTurno();
             actualizarTodo();
             
             // Si todos los jugadores pasaron consecutivamente
-            if (contadorTurnosSeguidos[0] >= juego.getJugadores().size()) {
+            if (contadorTurnosSeguidos >= juego.getJugadores().size()) {
                 mostrarTablaClasificacion(false);
-                contadorTurnosSeguidos[0] = 0; // Reiniciar contador
+                contadorTurnosSeguidos = 0; // Reiniciar contador
             }
         });
 
         btnCambiarFichas.addActionListener(e -> {
             // Si se empieza a cambiar fichas, reiniciar contador de turnos pasados
             if (!juego.isModoSeleccionCambio()) {
-                contadorTurnosSeguidos[0] = 0;
+                contadorTurnosSeguidos = 0;
             }
             
             juego.cambiarFicha(); // Este método probablemente maneja la lógica para cambiar al modo de selección y luego confirmar
@@ -417,7 +397,7 @@ public class TableroVistaSwing extends JFrame {
         
         if (jugadorTerminoSinFichas) {
             // Caso: Jugador terminó sin fichas
-            Jugador ganador = juego.getJugadorActual();
+            Jugador ganador = juego.getJugadorPasado();
             int sumaRestante = 0;
             
             // Restar puntos de las fichas restantes de los oponentes y sumarlos al ganador
