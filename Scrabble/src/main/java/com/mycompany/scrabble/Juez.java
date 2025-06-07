@@ -7,8 +7,10 @@ import java.util.HashSet;
 import java.util.Set;
 
 public class Juez {
+    // Almacena las palabras válidas del diccionario
     private Set<String> diccionario;
-    //Constructor que carga el diccionario desde un archivo de recursos
+
+    // Carga el diccionario desde el archivo "Diccionario.txt"
     public Juez() {
         diccionario = new HashSet<>();
         try {
@@ -20,14 +22,16 @@ public class Juez {
             BufferedReader br = new BufferedReader(new InputStreamReader(is));
             String linea;
             while ((linea = br.readLine()) != null) {
-                diccionario.add(linea.trim().toLowerCase()); // Manejo de errores para detectar problemas en la carga del archivo.
+                // Añade cada palabra en minúsculas al diccionario
+                diccionario.add(linea.trim().toLowerCase());
             }
             br.close();
         } catch (Exception e) {
-            e.printStackTrace(); // Manejo de errores para detectar problemas en la carga del archivo.
+            e.printStackTrace();
         }
     }
 
+    // Verifica si una palabra existe en el diccionario (ignorando mayúsculas)
     public boolean esValida(String palabra) {
         return diccionario.contains(palabra.toLowerCase());
     }
