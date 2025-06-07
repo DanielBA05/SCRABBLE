@@ -56,7 +56,7 @@ public class Juego {
     public Jugador getJugadorActual() {
         return jugadores.get(jugadorActualIndex);
     }
-    
+    // método para obtener el jugador del turno pasado según su indice de turno
     public Jugador getJugadorPasado(){
         if (jugadorActualIndex==0){
             return jugadores.get(jugadores.size()-1);
@@ -195,7 +195,7 @@ public class Juego {
             }
         }
     }
-
+    //método para ir actualizando el último estado del tablero y el atril según las jugadas válidas hechas
     private void guardarEstadoInicialTurno() {
         tableroCopiaInicioTurno = new Casilla[Tablero.FILAS][Tablero.COLUMNAS];
         for (int i = 0; i < Tablero.FILAS; i++) {
@@ -209,7 +209,7 @@ public class Juego {
             fichasAtrilInicioTurno.add(new Ficha(f));
         }
     }
-
+    //método para colocar la ficha seleccionada en el tablero, si es un comodín pregunta al usuario que letra representa
     public boolean colocarFichaEnTablero(Ficha ficha, int fila, int columna) {
     if (ficha == null) return false;
 
@@ -217,7 +217,7 @@ public class Juego {
     if (casilla == null) return false;
 
     if (casilla.getFicha() == null) {
-        // Si es un comodín, pedir al usuario que elija la letra
+        // Si es un comodín, pedir al usuario que elija la letra 
         if (ficha.esComodin()) {
             String letraStr = JOptionPane.showInputDialog(null, 
                 "Elija la letra que representará este comodín (A-Z):", 
