@@ -28,7 +28,7 @@ public class Ficha {
         this.esComodin = original.esComodin;
         this.lugar = original.lugar;
     }
-
+    // métodos get y set para obtener las variables de la ficha o cambiarlas
     public char getLetra() {
         return letra;
     }
