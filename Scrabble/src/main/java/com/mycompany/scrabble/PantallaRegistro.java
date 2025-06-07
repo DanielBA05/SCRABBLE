@@ -70,7 +70,6 @@ public class PantallaRegistro extends JFrame {
             JPanel panelFila = new JPanel(new BorderLayout());
             panelFila.add(campo, BorderLayout.CENTER);
             panelFila.add(botonFicha, BorderLayout.EAST);
-
             panelJugadores.add(panelFila);
         }
 
@@ -88,11 +87,8 @@ public class PantallaRegistro extends JFrame {
         JPanel panelInferior = new JPanel(new BorderLayout());
         panelInferior.add(new JScrollPane(resultadoArea), BorderLayout.CENTER);
         panelInferior.add(botonIniciar, BorderLayout.SOUTH);
-
         add(panelPrincipal, BorderLayout.NORTH);
         add(panelInferior, BorderLayout.CENTER);
-
-        // No activamos campos hasta confirmar cantidad
         setVisible(true);
     }
 
@@ -100,7 +96,6 @@ public class PantallaRegistro extends JFrame {
         int cantidad = (Integer) selectorJugadores.getSelectedItem();
         selectorJugadores.setEnabled(false);
         botonConfirmarCantidad.setEnabled(false);
-
         for (int i = 0; i < 4; i++) {
             camposNombres.get(i).setEnabled(i < cantidad);
             botonesFichas.get(i).setEnabled(i < cantidad);
@@ -123,11 +118,10 @@ public class PantallaRegistro extends JFrame {
         }
 
         if (!camposNombres.get(index).isEnabled()) return;
-
         Ficha f = monton.robarFicha();
         fichasJugadores.set(index, f);
         botonesFichas.get(index).setText("Sacó: " + f.getLetra());
-        botonesFichas.get(index).setEnabled(false); // ✅ Deshabilita el botón
+        botonesFichas.get(index).setEnabled(false); 
 
         actualizarResultadoSalida();
     }
@@ -159,31 +153,10 @@ public class PantallaRegistro extends JFrame {
 
         // Ordenar jugadores según ficha
         jugadores.sort((a, b) -> {
-            // Se necesita una forma de asociar el jugador 'a' o 'b' con la ficha que sacó.
-            // La forma actual 'jugadores.indexOf(a)' puede ser ineficiente si la lista es grande.
-            // Para simplificar, asumiremos que el índice en 'jugadores' corresponde al de 'fichasJugadores'.
-            // Sin embargo, si 'jugadores' ha sido reordenado o filtrado, esto podría fallar.
-            // Una solución más robusta sería usar un Map<Jugador, Ficha> desde el principio.
-            // Por ahora, para que funcione, nos aseguraremos de que 'jugadores' y 'fichasJugadores' estén alineados
-            // o que la asociación Ficha-Jugador se haga de otra manera.
-
-            // La forma más robusta es como lo haces en actualizarResultadoSalida(), usando un mapa.
-            // Pero como 'fichasJugadores' está indexado directamente a los campos de texto,
-            // y 'jugadores' se crea en orden de los campos de texto ANTES de ser ordenado,
-            // el '.indexOf(a)' aquí puede ser problemático si 'jugadores' ya fue alterado.
-
-            // Para este punto, 'jugadores' NO está ordenado, y 'fichasJugadores' SÍ guarda la ficha de cada índice.
-            // La lógica para la comparación necesita el índice ORIGINAL del jugador.
-            // Una manera de hacerlo sería mantener un mapa temporal o asociar la ficha al Jugador.
-            // Para mantener la lógica actual, asumiremos que 'jugadores' y 'fichasJugadores'
-            // guardan la relación por índice inicial.
-
-            // Mejor aún: Creamos el mapa que ya usas en actualizarResultadoSalida para ser coherentes.
             Map<Jugador, Ficha> mapaFichasParaSorteo = new HashMap<>();
             for (int i = 0; i < cantidad; i++) {
                 mapaFichasParaSorteo.put(jugadores.get(i), fichasJugadores.get(i));
             }
-
             Ficha fa = mapaFichasParaSorteo.get(a);
             Ficha fb = mapaFichasParaSorteo.get(b);
             return compararFichas(fa, fb);
@@ -191,15 +164,11 @@ public class PantallaRegistro extends JFrame {
 
 
         // Guardar el orden para uso posterior
-        ordenJugadores = new ArrayList<>(jugadores); // ¡Aquí se guarda el orden definitivo de Jugador!
+        ordenJugadores = new ArrayList<>(jugadores); 
 
         // Mostrar orden en el resultado de la pantalla de registro
         StringBuilder sb = new StringBuilder("Orden de salida:\n");
         for (int i = 0; i < ordenJugadores.size(); i++) {
-            // Debes obtener la ficha del jugador en el orden actual para mostrarla.
-            // Como 'fichasJugadores' ya no está alineado con 'ordenJugadores',
-            // necesitamos encontrar la ficha original de cada jugador.
-            // Para simplificar, podemos volver a usar 'mapaFichasParaSorteo'.
             Jugador jugadorActual = ordenJugadores.get(i);
             Ficha fichaDelJugador = null;
             for (int j = 0; j < cantidad; j++) {
@@ -208,24 +177,19 @@ public class PantallaRegistro extends JFrame {
                     break;
                 }
             }
-
             sb.append((i + 1)).append(". ")
               .append(jugadorActual.getNombre())
               .append(" (").append(fichaDelJugador != null ? fichaDelJugador.getLetra() : "?").append(")\n");
         }
         resultadoArea.setText(sb.toString());
 
-        // Crear el objeto Juego con los JUGADORES ordenados
-        // y sin la necesidad de la ruta del diccionario aquí
         try {
-            //juego = new Juego(nombres, "ruta/al/diccionario.txt"); // LÍNEA ANTERIOR CON ERROR
-            juego = new Juego(ordenJugadores); // ¡LÍNEA CORRECTA AHORA! Pasar la List<Jugador> ordenada
-        } catch (Exception ex) { // Capturar Exception general, ya que Juez ya maneja IOException internamente.
+            juego = new Juego(ordenJugadores); 
+        } catch (Exception ex) { 
             JOptionPane.showMessageDialog(this, "Error al iniciar el juego: " + ex.getMessage());
-            ex.printStackTrace(); // Para depuración
+            ex.printStackTrace(); 
             return;
         }
-
         // Crear y mostrar la vista del tablero
         TableroVistaSwing vista = new TableroVistaSwing(juego);
 
@@ -234,10 +198,9 @@ public class PantallaRegistro extends JFrame {
 
     private void actualizarResultadoSalida() {
         int cantidad = (Integer) selectorJugadores.getSelectedItem();
-        List<Jugador> jugadoresActuales = new ArrayList<>(); // Usamos un nombre diferente para evitar confusión
+        List<Jugador> jugadoresActuales = new ArrayList<>(); 
         Map<Jugador, Ficha> mapaFichas = new HashMap<>();
         Set<Character> letrasSacadas = new HashSet<>();
-
         for (int i = 0; i < cantidad; i++) {
             String nombre = camposNombres.get(i).getText().trim();
             Ficha ficha = fichasJugadores.get(i);
@@ -259,13 +222,11 @@ public class PantallaRegistro extends JFrame {
                 return;
             }
         }
-
         jugadoresActuales.sort((a, b) -> {
             Ficha fa = mapaFichas.get(a);
             Ficha fb = mapaFichas.get(b);
             return compararFichas(fa, fb);
         });
-
         StringBuilder sb = new StringBuilder("Orden de salida (parcial):\n");
         for (int i = 0; i < jugadoresActuales.size(); i++) {
             Ficha ficha = mapaFichas.get(jugadoresActuales.get(i));
@@ -273,7 +234,6 @@ public class PantallaRegistro extends JFrame {
               .append(jugadoresActuales.get(i).getNombre())
               .append(" (").append(ficha.getLetra()).append(")\n");
         }
-
         resultadoArea.setText(sb.toString());
     }
 
@@ -285,7 +245,7 @@ public class PantallaRegistro extends JFrame {
         char letra1 = Character.toLowerCase(f1.getLetra());
         char letra2 = Character.toLowerCase(f2.getLetra());
 
-        // Prioriza la ficha blanca '-'
+        // Prioriza la ficha blanca 
         if (letra1 == '-' && letra2 != '-') return -1;
         if (letra2 == '-' && letra1 != '-') return 1;
 

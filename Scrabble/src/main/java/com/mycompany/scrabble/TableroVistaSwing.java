@@ -19,7 +19,7 @@ public class TableroVistaSwing extends JFrame {
     private JLabel jugadorActualLabel;
     private JPanel atrilPanel;
     private JTextArea jugadoresArea;
-    private JLabel fichasRestantesLabel; // Nuevo JLabel para las fichas restantes
+    private JLabel fichasRestantesLabel; 
 
     private JButton btnTerminarTurno;
     private JButton btnPasarTurno;
@@ -116,10 +116,10 @@ public class TableroVistaSwing extends JFrame {
         jugadoresArea.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
         
         JScrollPane scrollJugadores = new JScrollPane(jugadoresArea);
-        scrollJugadores.setPreferredSize(new Dimension(330, 150)); // Altura ajustada
+        scrollJugadores.setPreferredSize(new Dimension(330, 150)); 
         panelInferiorIzq.add(scrollJugadores, BorderLayout.CENTER);
 
-        // Nuevo JLabel para las fichas restantes
+        // JLabel para las fichas restantes
         fichasRestantesLabel = new JLabel("Fichas en el mazo: ");
         fichasRestantesLabel.setFont(new Font("Arial", Font.BOLD, 14));
         fichasRestantesLabel.setHorizontalAlignment(SwingConstants.CENTER);
