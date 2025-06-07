@@ -50,11 +50,11 @@ public class Juego {
     }
 
     public List<Jugador> getJugadores() {
-        return new ArrayList<>(jugadores);
+        return new ArrayList<>(jugadores); //consigue lista de jugadores
     }
     
     public Jugador getJugadorActual() {
-        return jugadores.get(jugadorActualIndex);
+        return jugadores.get(jugadorActualIndex); //index del jugador actual
     }
     // método para obtener el jugador del turno pasado según su indice de turno
     public Jugador getJugadorPasado(){
@@ -65,7 +65,7 @@ public class Juego {
     }
 
     public List<Ficha> getFichasJugadorActual() {
-        return new ArrayList<>(getJugadorActual().getFichas());
+        return new ArrayList<>(getJugadorActual().getFichas()); //array de fichas del jugadore actual
     }
 
     public Tablero getTablero() {
@@ -113,9 +113,10 @@ public class Juego {
 
     private void iniciarCambioFichas() {
         if (!turnoTerminado && fichasColocadasEsteTurno.isEmpty()) {
+            //Si no se ha yerminado turno y si el jugador no ha colocado fichas...
             if (monton.getCantidadFichas() == 0) {
                 JOptionPane.showMessageDialog(null, "No hay fichas en el montón para cambiar.");
-                return;
+                return; //Si el monton no tiene fichas, no permite cambiar ninguna
             }
             modoSeleccionCambio = true;
             fichasSeleccionadasCambio.clear();
@@ -131,7 +132,7 @@ public class Juego {
     }
 
     public void terminarCambioFichas() {
-        if (fichasSeleccionadasCambio.isEmpty()) {
+        if (fichasSeleccionadasCambio.isEmpty()) { //Si no se selecciona ninguna, vuelve al modo normal
             JOptionPane.showMessageDialog(null, "No se seleccionaron fichas para cambiar.");
             modoSeleccionCambio = false;
             return;
@@ -141,7 +142,7 @@ public class Juego {
         int fichasDisponiblesMonton = monton.getCantidadFichas();
         int fichasACambiar = fichasSeleccionadasCambio.size();
 
-        if (fichasDisponiblesMonton < fichasACambiar) {
+        if (fichasDisponiblesMonton < fichasACambiar) { //Fichas disponibles es menor que las fichas que se quieren cambiar
             JOptionPane.showMessageDialog(null, 
                 "No hay suficientes fichas en el montón. Solo puedes cambiar " + 
                 fichasDisponiblesMonton + " fichas.");
@@ -240,11 +241,11 @@ public class Juego {
             comodinConLetra.setPuntos(0);
 
             casilla.setFicha(comodinConLetra);
-            comodinConLetra.setLugar(casilla);
+            comodinConLetra.setLugar(casilla); //asigna a la ficha su lugar, para poder contar puntos luego
             getJugadorActual().removerFicha(ficha);
         } else {
             casilla.setFicha(ficha);
-            ficha.setLugar(casilla);
+            ficha.setLugar(casilla); //asigna a la ficha su lugar, para poder contar puntos luego
             getJugadorActual().removerFicha(ficha);
         }
         
