@@ -13,7 +13,7 @@ public class Casilla {
     public static final int TRIPP = 4;  // Triple palabra
 
     private int multiplier;
-
+    //constructor, genera la ficha en null 
     public Casilla(int x, int y, int multiplier) {
         this.x = x;
         this.y = y;
@@ -22,11 +22,12 @@ public class Casilla {
 
     }
     
+    // Constructor copia: crea una nueva casilla basada en otra, incluyendo la ficha si existe.
     public Casilla(Casilla original) {
         this.x = original.x;
         this.y = original.y;
         this.multiplier = original.multiplier;
-        this.ficha = original.ficha != null ? new Ficha(original.ficha) : null; //para evitar errores
+        this.ficha = original.ficha != null ? new Ficha(original.ficha) : null; //Se crea una copia de la ficha para evitar referencias compartidas
     }
     
     public void quitarFicha() {
